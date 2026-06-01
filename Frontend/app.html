@@ -1,0 +1,142 @@
+<!-- frontend/app.html — STRUCTURE ONLY (key sections shown) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NetClick</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="app-screen">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+<div class="sidebar-logo">NET<span class="logo-accent">CLICK</span></div>
+<nav class="sidebar-nav">
+<button class="nav-btn active" data-tab="personalised">
+n Personalised Viewing
+</button>
+<button class="nav-btn" data-tab="chatbot">
+n AI Chatbot
+</button>
+</nav>
+<div class="sidebar-user">
+<span id="sidebarUserName"></span>
+<button id="logoutBtn">Sign Out</button>
+</div>
+</aside>
+<!-- MAIN CONTENT AREA -->
+<main class="main-content">
+<!-- nn TAB 1: PERSONALISED VIEWING nn -->
+<section id="tab-personalised" class="tab active">
+<div class="tab-header">
+<h2 id="greetingText">Hello, User</h2>
+<p>Choose a genre to see your personalised recommendations</p>
+</div>
+<!-- Genre buttons -->
+<div class="genre-buttons">
+<button class="genre-btn" data-genre="Action">Action</button>
+<button class="genre-btn" data-genre="Comedy">Comedy</button>
+<button class="genre-btn" data-genre="Drama">Drama</button>
+<button class="genre-btn" data-genre="Sci-Fi">Sci-Fi</button>
+<button class="genre-btn" data-genre="Thriller">Thriller</button>
+<button class="genre-btn" data-genre="Horror">Horror</button>
+<button class="genre-btn" data-genre="Romance">Romance</button>
+<button class="genre-btn" data-genre="Crime">Crime</button>
+<button class="genre-btn" data-genre="Animation">Animation</button>
+<button class="genre-btn" data-genre="Documentary">Documentary</button>
+</div>
+<!-- Filters (shown after a genre is selected) -->
+<div class="filters-panel hidden" id="filtersPanel">
+<h4>Refine Results</h4>
+<div class="filter-group">
+<label>Min. Rating</label>
+<select id="filterRating">
+<option value="">Any</option>
+<option value="7">7+ / 10</option>
+<option value="8">8+ / 10</option>
+<option value="9">9+ / 10</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Duration</label>
+<select id="filterRuntime">
+<option value="">Any</option>
+<option value="90">Under 90 min</option>
+<option value="120">Under 2 hours</option>
+<option value="150">Under 2.5 hours</option>
+</select>
+</div>
+<button id="applyFilters" class="btn-secondary">Apply Filters</button>
+</div>
+<!-- Movie cards grid -->
+<div class="movies-grid" id="moviesGrid">
+<div class="placeholder-msg">Select a genre above to get started</div>
+</div>
+</section>
+<!-- nn TAB 2: AI CHATBOT nn -->
+<section id="tab-chatbot" class="tab hidden">
+<div class="tab-header">
+<h2>AI Movie Assistant</h2>
+<p>Tell me exactly what you want to watch and I'll find it for you</p>
+</div>
+<div class="chatbot-examples">
+<p>Try asking:</p>
+<span class="example-chip">"Action movie with Adam Sandler, funny, good ratings"</span>
+<span class="example-chip">"Something like Inception but more emotional"</span>
+<span class="example-chip">"Short horror film under 90 minutes, 2020s"</span>
+</div>
+<div class="chatbot-input-area">
+<textarea id="chatPrompt" rows="3"
+placeholder="Describe what you want to watch in as much detail as possible...">
+</textarea>
+<button id="chatSubmit" class="btn-primary">Find Movies</button>
+</div>
+<div class="chatbot-response hidden" id="chatbotResponse">
+<p class="chat-message" id="chatMessage"></p>
+<div class="chatbot-suggestions" id="chatSuggestions"></div>
+</div>
+</section>
+</main>
+<!-- MOVIE DETAIL POPUP (hidden by default) -->
+<div class="popup-overlay hidden" id="moviePopup">
+<div class="popup-card">
+<button class="popup-close" id="popupClose">5</button>
+<div class="popup-header">
+<img id="popupPoster" src="" alt="Movie Poster">
+<div class="popup-info">
+<h2 id="popupTitle"></h2>
+<div class="popup-meta">
+<span class="rating-badge" id="popupRating"></span>
+<span id="popupYear"></span>
+<span id="popupRuntime"></span>
+</div>
+<div class="popup-cast" id="popupCast"></div>
+</div>
+</div>
+<p class="popup-overview" id="popupOverview"></p>
+<div class="why-youll-like" id="popupWhy"></div>
+<div class="streaming-where">
+<h4>Where to watch:</h4>
+<div class="streaming-badges">
+<span class="badge">Netflix</span>
+<span class="badge">Disney+</span>
+<span class="badge">Stan</span>
+<span class="badge">Prime Video</span>
+</div>
+</div>
+<button class="btn-watched" id="watchedBtn">3 Mark as Watched</button>
+</div>
+</div>
+<!-- WATCHED POPUP -->
+<div class="popup-overlay hidden" id="ratingPopup">
+<div class="popup-card rating-card">
+<h3>Great choice! Did you enjoy it?</h3>
+<p>Your feedback helps NetClick personalise your recommendations.</p>
+<div class="rating-buttons">
+<button class="btn-thumbs up" id="thumbsUp">n Loved it</button>
+<button class="btn-thumbs down" id="thumbsDown">n Not for me</button>
+</div>
+</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

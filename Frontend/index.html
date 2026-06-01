@@ -1,0 +1,35 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetClick</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="loading-screen">
+<div class="loading-container">
+<!-- NetClick Logo -->
+<div class="logo-container">
+<h1 class="logo">NET<span class="logo-accent">CLICK</span></h1>
+<p class="logo-tagline">Your personalised viewing experience</p>
+</div>
+<!-- Spinning loader -->
+<div class="spinner-container">
+<div class="spinner"></div>
+<p class="loading-text">Loading your experience...</p>
+</div>
+</div>
+<script>
+// After 2.5 seconds, redirect to login (or app if already logged in)
+setTimeout(() => {
+const user = localStorage.getItem('netclick_user');
+if (user) {
+window.location.href = 'app.html';
+} else {
+window.location.href = 'login.html';
+}
+}, 2500);
+</script>
+</body>
+</html>

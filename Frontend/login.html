@@ -1,0 +1,54 @@
+<!-- frontend/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NetClick — Login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="login-screen">
+<div class="login-container">
+<h1 class="logo">NET<span class="logo-accent">CLICK</span></h1>
+<div class="login-card">
+<h2>Sign In</h2>
+<p class="login-sub">Enter your email to access NetClick</p>
+<div class="input-group">
+<input type="email" id="emailInput"
+placeholder="your@email.com" class="text-input">
+</div>
+<button id="loginBtn" class="btn-primary">Continue</button>
+<p class="demo-hint">
+Demo access: <strong>demo@netclick.com</strong>
+</p>
+</div>
+<div class="streaming-links">
+<p>After logging in, link your streaming services:</p>
+<div class="service-badges">
+<span class="badge">Netflix</span>
+<span class="badge">Disney+</span>
+<span class="badge">Stan</span>
+<span class="badge">Prime Video</span>
+</div>
+<p class="note">For this demo, watch history is pre-loaded for you</p>
+</div>
+</div>
+<script>
+const BACKEND = 'http://localhost:3000'; // change to deployed URL later
+document.getElementById('loginBtn').addEventListener('click', async () => {
+const email = document.getElementById('emailInput').value.trim();
+if (!email) return alert('Please enter your email');
+const res = await fetch(`${BACKEND}/api/login`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ email })
+
+});
+const data = await res.json();
+if (data.success) {
+localStorage.setItem('netclick_user', JSON.stringify(data.user));
+window.location.href = 'app.html';
+}
+});
+</script>
+</body>
+</html>
