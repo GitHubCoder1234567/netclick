@@ -6,12 +6,12 @@ const KEY  = process.env.TMDB_API_KEY;
 const BASE = 'https://api.themoviedb.org/3';
 
 async function getMoviesByGenre(genreId, page = 1, language = 'en') {
-  const langFilter = language ? `&with_original_language=${language}` : '';
+  const langFilter = language && language !== 'all' ? `&with_original_language=${language}` : '';
   const url = `${BASE}/discover/movie?api_key=${KEY}` +
     `&with_genres=${genreId}` +
-    `&sort_by=vote_average.desc` +
-    `&vote_count.gte=300` +
-    `&vote_average.gte=6.0` +
+    `&sort_by=popularity.desc` +
+    `&vote_count.gte=200` +
+    `&vote_average.gte=5.5` +
     `&page=${page}` +
     langFilter;
 
@@ -21,7 +21,7 @@ async function getMoviesByGenre(genreId, page = 1, language = 'en') {
 }
 
 async function getMovieDetails(movieId) {
-  const url = `${BASE}/movie/${movieId}?api_key=${KEY}&append_to_response=credits`;
+  const url = `${BASE}/movie/${movieId}?api_key=${KEY}&append_to_response=credits,watch/providers`;
   const res  = await fetch(url);
   return await res.json();
 }

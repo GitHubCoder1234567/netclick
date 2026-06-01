@@ -10,9 +10,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (!stored) return window.location.href = 'login.html';
   currentUser = JSON.parse(stored);
 
-  document.getElementById('greetingText').textContent =
-    `Hello, ${currentUser.name || 'there'}`;
-  document.getElementById('sidebarUserName').textContent = currentUser.name;
+  updateGreeting();
+  updateProfileDisplay();
 
   // Sidebar tab switching
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -51,23 +50,60 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('watchedBtn').addEventListener('click', markWatched);
-  document.getElementById('thumbsUp').addEventListener('click', () => submitRating(1));
+  document.getElementById('thumbsUp').addEventListener('click',   () => submitRating(1));
   document.getElementById('thumbsDown').addEventListener('click', () => submitRating(0));
+
+  // Profile button
+  document.getElementById('profileBtn').addEventListener('click', () => {
+    openProfilePanel();
+  });
+
+  // Profile panel close
+  document.getElementById('profileClose').addEventListener('click', () => {
+    document.getElementById('profilePanel').classList.add('hidden');
+  });
+
+  // Profile form handlers
+  document.getElementById('saveUsername').addEventListener('click', saveUsername);
+  document.getElementById('saveEmail').addEventListener('click', saveEmail);
+  document.getElementById('saveLanguage').addEventListener('click', saveLanguage);
+  document.getElementById('pfpUpload').addEventListener('change', handlePfpUpload);
+  document.getElementById('deleteAccount').addEventListener('click', deleteAccount);
 });
 
-// ── LOAD MOVIE RECOMMENDATIONS ────────────────────────────────
+// ── GREETING & PROFILE DISPLAY ────────────────────────────────
+function updateGreeting() {
+  const name = currentUser.name || 'there';
+  document.getElementById('greetingText').textContent = `Hello, ${name}`;
+}
+
+function updateProfileDisplay() {
+  document.getElementById('sidebarUserName').textContent = currentUser.name || 'User';
+  const pfp = currentUser.picture;
+  const avatarEl = document.getElementById('sidebarAvatar');
+  if (pfp) {
+    avatarEl.innerHTML = `<img src="${pfp}" alt="Profile">`;
+  } else {
+    avatarEl.innerHTML = `<span>${(currentUser.name || 'U').charAt(0).toUpperCase()}</span>`;
+  }
+}
+
+// ── LOAD MOVIES ───────────────────────────────────────────────
 async function loadMovies(genre) {
   const grid = document.getElementById('moviesGrid');
   grid.innerHTML = '<div class="loading-movies">Finding your movies...</div>';
 
-  const filters = {
-    minRating:   document.getElementById('filterRating').value,
-    maxRuntime:  document.getElementById('filterRuntime').value,
-    language:    document.getElementById('filterLanguage').value,
-    minYear:     document.getElementById('filterYear').value,
-  };
+  const minRating  = document.getElementById('filterRating').value;
+  const maxRuntime = document.getElementById('filterRuntime').value;
+  const language   = document.getElementById('filterLanguage').value;
+  const minYear    = document.getElementById('filterYear').value;
 
-  const params = new URLSearchParams(filters).toString();
+  const params = new URLSearchParams({
+    minRating:  minRating  || '',
+    maxRuntime: maxRuntime || '',
+    language:   language   || 'en',
+    minYear:    minYear    || '',
+  }).toString();
 
   try {
     const res  = await fetch(`${BACKEND}/api/recommendations/${currentUser.id}/${genre}?${params}`);
@@ -75,7 +111,7 @@ async function loadMovies(genre) {
     currentMoviesList = data.movies || [];
 
     if (!currentMoviesList.length) {
-      grid.innerHTML = '<p class="placeholder-msg">No movies found. Try adjusting filters.</p>';
+      grid.innerHTML = '<p class="placeholder-msg">No movies found. Try adjusting your filters.</p>';
       return;
     }
 
@@ -102,11 +138,11 @@ async function loadMovies(genre) {
     });
 
   } catch (e) {
-    grid.innerHTML = '<p class="placeholder-msg">Error loading movies. Please try again.</p>';
+    grid.innerHTML = '<p class="placeholder-msg">Error loading movies. Check your connection.</p>';
   }
 }
 
-// ── MOVIE DETAIL POPUP ────────────────────────────────────────
+// ── MOVIE POPUP ───────────────────────────────────────────────
 async function openMoviePopup(movieId) {
   currentMovie = currentMoviesList.find(m => m.id == movieId);
   if (!currentMovie) return;
@@ -119,9 +155,8 @@ async function openMoviePopup(movieId) {
     document.getElementById('popupYear').textContent     = detail.release_date?.split('-')[0] || '';
     document.getElementById('popupRating').textContent   = `${detail.vote_average?.toFixed(1)} / 10`;
     document.getElementById('popupRuntime').textContent  = detail.runtime ? `${detail.runtime} min` : '';
-    document.getElementById('popupOverview').textContent = detail.overview;
+    document.getElementById('popupOverview').textContent = detail.overview || '';
 
-    // Generate a unique reason based on actual movie data
     const reason = generateUniqueReason(detail, currentGenre);
     document.getElementById('popupWhy').innerHTML =
       `<strong>Why NetClick recommends this:</strong> ${reason}`;
@@ -134,34 +169,51 @@ async function openMoviePopup(movieId) {
         `https://image.tmdb.org/t/p/w342${detail.poster_path}`;
     }
 
+    // Where to watch — use TMDB watch providers for Australia (AU)
+    const providers = detail['watch/providers']?.results?.AU;
+    const streamingDiv = document.getElementById('streamingProviders');
+    if (providers && (providers.flatrate || providers.rent || providers.buy)) {
+      const all = [
+        ...(providers.flatrate || []),
+        ...(providers.rent     || []),
+        ...(providers.buy      || []),
+      ];
+      // Remove duplicates by provider_name
+      const unique = [...new Map(all.map(p => [p.provider_name, p])).values()];
+      streamingDiv.innerHTML = unique.map(p =>
+        `<span class="badge">${p.provider_name}</span>`
+      ).join('');
+    } else {
+      streamingDiv.innerHTML = `<span class="badge muted">Not currently streaming in AU</span>`;
+    }
+
     document.getElementById('moviePopup').classList.remove('hidden');
   } catch (e) {
     console.error('Error loading movie details:', e);
   }
 }
 
-// ── GENERATE UNIQUE RECOMMENDATION REASON ────────────────────
+// ── UNIQUE REASON PER MOVIE ───────────────────────────────────
 function generateUniqueReason(detail, genre) {
-  const title      = detail.title;
-  const rating     = detail.vote_average?.toFixed(1);
-  const year       = detail.release_date?.split('-')[0];
-  const runtime    = detail.runtime;
-  const cast       = detail.credits?.cast?.slice(0, 2).map(a => a.name).join(' and ') || '';
-  const voteCount  = detail.vote_count;
+  const rating    = detail.vote_average?.toFixed(1) || 'N/A';
+  const year      = detail.release_date?.split('-')[0] || '';
+  const runtime   = detail.runtime || null;
+  const voteCount = detail.vote_count?.toLocaleString() || 'many';
+  const cast      = detail.credits?.cast?.slice(0, 2).map(a => a.name).join(' and ') || null;
+  const overview  = detail.overview || '';
 
   const reasons = [
-    `${title} is one of the highest-rated ${genre} films of ${year}, scoring ${rating}/10 from over ${voteCount?.toLocaleString()} viewers — a strong sign you'll enjoy it based on your history.`,
-    `With a ${rating}/10 rating and ${cast ? `starring ${cast}` : 'a stellar cast'}, ${title} is a standout pick in the ${genre} genre that aligns with your taste profile.`,
-    `Your watch history shows a clear preference for high-quality ${genre} content — ${title} (${rating}/10, ${year}) fits that pattern perfectly.`,
-    `${title} has earned ${rating}/10 from a large audience${runtime ? ` and runs ${runtime} minutes` : ''}, making it an ideal ${genre} recommendation based on what you've enjoyed before.`,
-    `Rated ${rating}/10 and released in ${year}, ${title} is a critically appreciated ${genre} film${cast ? ` featuring ${cast}` : ''} that matches your viewing preferences.`,
+    `Rated ${rating}/10 by ${voteCount} viewers${year ? ` and released in ${year}` : ''}, this is one of the most appreciated ${genre} films based on your taste profile.`,
+    `${cast ? `Starring ${cast}, t` : 'T'}his ${year || ''} ${genre.toLowerCase()} film scored ${rating}/10 — a strong match for the type of content you've been watching.`,
+    `With a ${rating}/10 rating${runtime ? ` and a tight ${runtime}-minute runtime` : ''}, this is a standout ${genre} pick that aligns with your viewing history.`,
+    `${voteCount} people rated this ${rating}/10 — the crowd agrees this ${genre.toLowerCase()} film is worth your time${year ? ` (${year})` : ''}.`,
+    `Your history shows you enjoy quality ${genre} content. This ${year || ''} film (${rating}/10${cast ? `, featuring ${cast}` : ''}) fits that preference well.`,
   ];
 
-  // Pick reason based on movie ID so it's consistent per movie but different across movies
   return reasons[detail.id % reasons.length];
 }
 
-// ── MARK AS WATCHED ───────────────────────────────────────────
+// ── WATCHED & RATING ──────────────────────────────────────────
 async function markWatched() {
   if (!currentMovie) return;
   await fetch(`${BACKEND}/api/watched`, {
@@ -178,7 +230,6 @@ async function markWatched() {
   document.getElementById('ratingPopup').classList.remove('hidden');
 }
 
-// ── SUBMIT RATING ─────────────────────────────────────────────
 async function submitRating(rating) {
   if (!currentMovie) return;
   await fetch(`${BACKEND}/api/rate`, {
@@ -195,7 +246,7 @@ async function submitRating(rating) {
   if (currentGenre) loadMovies(currentGenre);
 }
 
-// ── AI CHATBOT ────────────────────────────────────────────────
+// ── CHATBOT ───────────────────────────────────────────────────
 async function submitChatPrompt() {
   const prompt = document.getElementById('chatPrompt').value.trim();
   if (!prompt) return alert('Please describe what you want to watch');
@@ -226,7 +277,7 @@ async function submitChatPrompt() {
         </div>
       `).join('');
     } else {
-      suggestionsDiv.innerHTML = '<p>No suggestions found. Try rephrasing your prompt with more detail.</p>';
+      suggestionsDiv.innerHTML = '<p>No suggestions found. Try rephrasing your prompt.</p>';
     }
     document.getElementById('chatbotResponse').classList.remove('hidden');
 
@@ -235,4 +286,131 @@ async function submitChatPrompt() {
     btn.disabled = false;
     alert('Error connecting to chatbot. Please try again.');
   }
+}
+
+// ── PROFILE PANEL ─────────────────────────────────────────────
+function openProfilePanel() {
+  document.getElementById('profileName').value  = currentUser.name  || '';
+  document.getElementById('profileEmail').value = currentUser.email || '';
+  document.getElementById('profileLang').value  = currentUser.preferred_language || 'en';
+
+  const preview = document.getElementById('pfpPreview');
+  if (currentUser.picture) {
+    preview.innerHTML = `<img src="${currentUser.picture}" alt="Profile picture">`;
+  } else {
+    preview.innerHTML = `<span class="pfp-initial">${(currentUser.name || 'U').charAt(0).toUpperCase()}</span>`;
+  }
+
+  document.getElementById('profilePanel').classList.remove('hidden');
+}
+
+async function saveUsername() {
+  const name = document.getElementById('profileName').value.trim();
+  if (!name) return alert('Please enter a name');
+
+  const res  = await fetch(`${BACKEND}/api/profile/username`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: currentUser.id, name })
+  });
+  const data = await res.json();
+  if (data.success) {
+    currentUser = { ...currentUser, name };
+    localStorage.setItem('netclick_user', JSON.stringify(currentUser));
+    updateGreeting();
+    updateProfileDisplay();
+    showToast('Username updated!');
+  }
+}
+
+async function saveEmail() {
+  const email = document.getElementById('profileEmail').value.trim();
+  if (!email) return alert('Please enter an email');
+
+  const res  = await fetch(`${BACKEND}/api/profile/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: currentUser.id, email })
+  });
+  const data = await res.json();
+  if (data.success) {
+    currentUser = { ...currentUser, email };
+    localStorage.setItem('netclick_user', JSON.stringify(currentUser));
+    showToast('Email updated!');
+  } else {
+    alert(data.error || 'Could not update email');
+  }
+}
+
+async function saveLanguage() {
+  const language = document.getElementById('profileLang').value;
+  const res = await fetch(`${BACKEND}/api/profile/language`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: currentUser.id, language })
+  });
+  const data = await res.json();
+  if (data.success) {
+    currentUser = { ...currentUser, preferred_language: language };
+    localStorage.setItem('netclick_user', JSON.stringify(currentUser));
+    showToast('Language preference saved!');
+  }
+}
+
+function handlePfpUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) return alert('Image must be under 5MB');
+
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    const base64 = ev.target.result;
+
+    // Show preview immediately
+    document.getElementById('pfpPreview').innerHTML =
+      `<img src="${base64}" alt="Profile picture">`;
+
+    // Save to backend
+    const res  = await fetch(`${BACKEND}/api/profile/picture`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUser.id, picture: base64 })
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentUser = { ...currentUser, picture: base64 };
+      localStorage.setItem('netclick_user', JSON.stringify(currentUser));
+      updateProfileDisplay(); // updates sidebar avatar in real time
+      showToast('Profile picture updated!');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function deleteAccount() {
+  const confirmed = confirm(
+    'Are you sure you want to delete your account? This cannot be undone.'
+  );
+  if (!confirmed) return;
+
+  const res = await fetch(`${BACKEND}/api/profile/${currentUser.id}`, {
+    method: 'DELETE'
+  });
+  const data = await res.json();
+  if (data.success) {
+    localStorage.removeItem('netclick_user');
+    window.location.href = 'login.html';
+  }
+}
+
+// ── TOAST NOTIFICATION ────────────────────────────────────────
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.remove('hidden');
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.classList.add('hidden');
+  }, 2500);
 }

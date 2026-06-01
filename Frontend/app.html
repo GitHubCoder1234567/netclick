@@ -12,15 +12,14 @@
   <aside class="sidebar">
     <div class="sidebar-logo">NET<span class="logo-accent">CLICK</span></div>
     <nav class="sidebar-nav">
-      <button class="nav-btn active" data-tab="personalised">
-        Personalised Viewing
-      </button>
-      <button class="nav-btn" data-tab="chatbot">
-        AI Chatbot
-      </button>
+      <button class="nav-btn active" data-tab="personalised">Personalised Viewing</button>
+      <button class="nav-btn" data-tab="chatbot">AI Chatbot</button>
     </nav>
     <div class="sidebar-user">
-      <span id="sidebarUserName"></span>
+      <button id="profileBtn" class="profile-btn">
+        <div class="sidebar-avatar" id="sidebarAvatar"><span>U</span></div>
+        <span id="sidebarUserName">User</span>
+      </button>
       <button id="logoutBtn">Sign Out</button>
     </div>
   </aside>
@@ -35,7 +34,6 @@
         <p>Choose a genre to see your personalised recommendations</p>
       </div>
 
-      <!-- Genre buttons -->
       <div class="genre-buttons">
         <button class="genre-btn" data-genre="Action">Action</button>
         <button class="genre-btn" data-genre="Comedy">Comedy</button>
@@ -49,7 +47,6 @@
         <button class="genre-btn" data-genre="Documentary">Documentary</button>
       </div>
 
-      <!-- Filters -->
       <div class="filters-panel hidden" id="filtersPanel">
         <div class="filter-group">
           <label>Min. Rating</label>
@@ -99,7 +96,6 @@
         <button id="applyFilters" class="btn-secondary">Apply Filters</button>
       </div>
 
-      <!-- Movie grid -->
       <div class="movies-grid" id="moviesGrid">
         <div class="placeholder-msg">Select a genre above to get started</div>
       </div>
@@ -111,7 +107,6 @@
         <h2>AI Movie Assistant</h2>
         <p>Tell me exactly what you want to watch and I'll find it for you</p>
       </div>
-
       <div class="chatbot-examples">
         <p>Try asking:</p>
         <span class="example-chip">"Action movie with Adam Sandler, funny, good ratings"</span>
@@ -119,13 +114,11 @@
         <span class="example-chip">"Short horror film under 90 minutes from the 2020s"</span>
         <span class="example-chip">"A feel-good comedy with a happy ending"</span>
       </div>
-
       <div class="chatbot-input-area">
         <textarea id="chatPrompt" rows="3"
-          placeholder="Describe what you want to watch in as much detail as possible — genre, mood, actors, era, rating..."></textarea>
+          placeholder="Describe what you want to watch — genre, mood, actors, era..."></textarea>
         <button id="chatSubmit" class="btn-primary">Find Movies</button>
       </div>
-
       <div class="chatbot-response hidden" id="chatbotResponse">
         <p class="chat-message" id="chatMessage"></p>
         <div class="chatbot-suggestions" id="chatSuggestions"></div>
@@ -134,7 +127,7 @@
 
   </main>
 
-  <!-- MOVIE DETAIL POPUP -->
+  <!-- MOVIE POPUP -->
   <div class="popup-overlay hidden" id="moviePopup">
     <div class="popup-card">
       <button class="popup-close" id="popupClose">&times;</button>
@@ -153,13 +146,8 @@
       <p class="popup-overview" id="popupOverview"></p>
       <div class="why-youll-like" id="popupWhy"></div>
       <div class="streaming-where">
-        <h4>Where to watch:</h4>
-        <div class="streaming-badges">
-          <span class="badge">Netflix</span>
-          <span class="badge">Disney+</span>
-          <span class="badge">Stan</span>
-          <span class="badge">Prime Video</span>
-        </div>
+        <h4>Where to watch in Australia:</h4>
+        <div class="streaming-badges" id="streamingProviders"></div>
       </div>
       <button class="btn-watched" id="watchedBtn">Mark as Watched</button>
     </div>
@@ -171,11 +159,74 @@
       <h3>Great choice! Did you enjoy it?</h3>
       <p>Your feedback helps NetClick personalise your recommendations.</p>
       <div class="rating-buttons">
-        <button class="btn-thumbs up" id="thumbsUp">Loved it</button>
+        <button class="btn-thumbs up"   id="thumbsUp">Loved it</button>
         <button class="btn-thumbs down" id="thumbsDown">Not for me</button>
       </div>
     </div>
   </div>
+
+  <!-- PROFILE PANEL -->
+  <div class="popup-overlay hidden" id="profilePanel">
+    <div class="popup-card profile-card">
+      <button class="popup-close" id="profileClose">&times;</button>
+      <h2>My Profile</h2>
+
+      <!-- Profile picture -->
+      <div class="pfp-section">
+        <div class="pfp-preview" id="pfpPreview"><span class="pfp-initial">U</span></div>
+        <label class="btn-secondary pfp-label">
+          Change Photo
+          <input type="file" id="pfpUpload" accept="image/*" style="display:none">
+        </label>
+      </div>
+
+      <!-- Username -->
+      <div class="profile-field">
+        <label>Username</label>
+        <div class="field-row">
+          <input type="text" id="profileName" placeholder="Your name" class="text-input">
+          <button class="btn-secondary" id="saveUsername">Save</button>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="profile-field">
+        <label>Email Address</label>
+        <div class="field-row">
+          <input type="email" id="profileEmail" placeholder="your@email.com" class="text-input">
+          <button class="btn-secondary" id="saveEmail">Save</button>
+        </div>
+      </div>
+
+      <!-- Preferred language -->
+      <div class="profile-field">
+        <label>Preferred Movie Language</label>
+        <div class="field-row">
+          <select id="profileLang" class="text-input">
+            <option value="en">English</option>
+            <option value="">All Languages</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+            <option value="de">German</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="hi">Hindi</option>
+            <option value="it">Italian</option>
+          </select>
+          <button class="btn-secondary" id="saveLanguage">Save</button>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="danger-zone">
+        <h4>Danger Zone</h4>
+        <button class="btn-danger" id="deleteAccount">Delete My Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast hidden" id="toast"></div>
 
   <script src="app.js"></script>
 </body>
