@@ -12,40 +12,55 @@ async function getSuggestions(userPrompt, userId) {
     body: JSON.stringify({
       model:      'llama3-8b-8192',
       max_tokens: 800,
+      temperature: 0.7,
       messages: [
         {
           role: 'system',
-          content: `You are NetClick's movie recommendation AI. When given a user's request,
-you respond ONLY with a JSON object in this exact format:
+          content: `You are NetClick's friendly movie recommendation AI. 
+Your job is to suggest movies based on ANY user request, no matter how vague or short.
+Even if the request is just one word like "funny" or "scary", give 1-3 great suggestions.
+Always respond ONLY with a valid JSON object — no extra text, no markdown, no backticks.
+Use this exact format:
 {
   "suggestions": [
     {
       "title": "Movie Title",
-      "year": "2023",
-      "reason": "One sentence on why this matches the request",
-      "tmdb_search": "search term to find this on TMDB"
+      "year": "2019",
+      "reason": "One sentence explaining why this matches the user request"
     }
   ],
-  "message": "A short friendly intro message (1 sentence)"
+  "message": "A short friendly sentence introducing your suggestions"
 }
-Return 1-3 suggestions. Only suggest films with strong critical reception.
-Do not include any text outside the JSON object.`
+Only suggest well-known movies with good ratings. Return 1-3 suggestions always.`
         },
-        { role: 'user', content: userPrompt }
+        {
+          role: 'user',
+          content: userPrompt
+        }
       ]
     })
   });
 
   const data = await response.json();
-  const text = data.choices[0].message.content;
 
-  // Parse the JSON response
+  if (!data.choices || !data.choices[0]) {
+    return {
+      suggestions: [],
+      message: "Sorry, I couldn't connect to the AI. Please try again."
+    };
+  }
+
+  const text = data.choices[0].message.content.trim();
+
+  // Strip any markdown backticks if present
+  const clean = text.replace(/```json|```/g, '').trim();
+
   try {
-    return JSON.parse(text);
+    return JSON.parse(clean);
   } catch (e) {
     return {
       suggestions: [],
-      message: "I had trouble finding the perfect match. Try being more specific!"
+      message: "I had trouble with that one. Try describing the mood or genre you want."
     };
   }
 }
