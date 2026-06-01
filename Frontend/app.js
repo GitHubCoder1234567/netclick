@@ -1,5 +1,5 @@
 // frontend/app.js
-const BACKEND = 'netclick-production.up.railway.app';
+const BACKEND = 'https://netclick-production.up.railway.app';
 let currentUser = null;
 let currentMovie = null;
 let currentGenre = null;
