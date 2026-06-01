@@ -1,5 +1,5 @@
 // frontend/app.js
-const BACKEND = 'http://localhost:3000'; // Update to deployed URL after Phase 6
+const BACKEND = 'netclick-production.up.railway.app';
 let currentUser = null;
 let currentMovie = null;
 let currentGenre = null;
