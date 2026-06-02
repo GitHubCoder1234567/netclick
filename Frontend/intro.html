@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetClick - Welcome</title>
+  <link rel="stylesheet" href="intro.css">
+</head>
+<body class="intro-screen">
+
+  <!-- SKIP BUTTON -->
+  <button class="skip-btn" id="skipBtn">Skip</button>
+
+  <!-- LETTER CONTAINER -->
+  <div class="intro-container">
+    <div class="letter-display" id="letterDisplay">N</div>
+    <div class="progress-dots" id="progressDots"></div>
+  </div>
+
+  <!-- SCROLL HINT -->
+  <div class="scroll-hint" id="scrollHint">
+    <span>Scroll to continue</span>
+    <div class="scroll-arrow">↓</div>
+  </div>
+
+  <!-- LOGIN PANEL (shown after completing intro) -->
+  <div class="login-panel hidden" id="loginPanel">
+    <div class="login-card">
+      <h1>Welcome to <span class="logo-accent">NET<span class="red">CLICK</span></span></h1>
+      <p>Discover movies tailored just for you</p>
+      <button class="btn-primary" id="proceedBtn">Continue to Login</button>
+      <button class="btn-back" id="backBtn">← Back</button>
+    </div>
+  </div>
+
+  <script src="intro.js"></script>
+</body>
+</html>

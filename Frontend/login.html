@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NetClick — Login</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -34,6 +35,15 @@ Demo access: <strong>demo@netclick.com</strong>
 </div>
 <script>
 const BACKEND = 'https://netclick-production.up.railway.app';
+
+// Check if user has seen intro
+window.addEventListener('DOMContentLoaded', () => {
+  const hasSeenIntro = localStorage.getItem('netclick_intro_seen');
+  if (!hasSeenIntro) {
+    window.location.href = 'intro.html';
+  }
+});
+
 document.getElementById('loginBtn').addEventListener('click', async () => {
 const email = document.getElementById('emailInput').value.trim();
 if (!email) return alert('Please enter your email');
