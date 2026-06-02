@@ -24,11 +24,21 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Genre buttons
-  document.querySelectorAll('.genre-btn').forEach(btn => {
+  // Genre buttons - removed from main page, now only in sidebar
+  // Sidebar genre buttons handle genre selection
+  document.querySelectorAll('.sidebar-genre-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      document.querySelectorAll('.genre-btn').forEach(b => {
+        if (b && b.dataset.genre === btn.dataset.genre) {
+          if (b.click) b.click();
+        }
+      });
+    });
+  });
+
+  // Handle genre selection via sidebar (replaces old genre button clicks)
+  document.querySelectorAll('.sidebar-genre-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
       currentGenre = btn.dataset.genre;
       document.getElementById('filtersPanel').classList.remove('hidden');
       document.getElementById('sidebarGenres').classList.remove('hidden');
@@ -40,6 +50,20 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('applyFilters').addEventListener('click', () => {
     if (currentGenre) loadMovies(currentGenre);
   });
+
+  // Reset filters button
+  const resetBtn = document.getElementById('resetFilters');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      document.getElementById('filterRating').value = '';
+      document.getElementById('filterRuntime').value = '';
+      document.getElementById('filterLanguage').value = 'en';
+      document.getElementById('filterYear').value = '';
+      document.getElementById('filterPopularity').value = '';
+      document.getElementById('filterRuntimeRange').value = '';
+      if (currentGenre) loadMovies(currentGenre);
+    });
+  }
 
   document.getElementById('chatSubmit').addEventListener('click', submitChatPrompt);
 
