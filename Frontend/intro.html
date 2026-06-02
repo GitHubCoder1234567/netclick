@@ -9,21 +9,25 @@
 <body class="intro-screen">
 
   <!-- SKIP BUTTON -->
-  <button class="skip-btn" id="skipBtn">Skip</button>
+  <button class="skip-btn" id="skipBtn">Skip Intro</button>
 
-  <!-- LETTER CONTAINER -->
+  <!-- CINEMATIC INTRO -->
   <div class="intro-container">
     <div class="letter-display" id="letterDisplay">N</div>
-    <div class="progress-dots" id="progressDots"></div>
+    
+    <div class="intro-text">
+      <h1 class="fade-in">Welcome to</h1>
+      <div class="logo-big">NET<span class="logo-accent">CLICK</span></div>
+      <p class="tagline fade-in-delay">Your Personal Cinematic Journey Begins</p>
+    </div>
+
+    <div class="scroll-hint" id="scrollHint">
+      <span>Scroll slowly for magic</span>
+      <div class="scroll-arrow">↓</div>
+    </div>
   </div>
 
-  <!-- SCROLL HINT -->
-  <div class="scroll-hint" id="scrollHint">
-    <span>Scroll to continue</span>
-    <div class="scroll-arrow">↓</div>
-  </div>
-
-  <!-- LOGIN PANEL (shown after completing intro) -->
+  <!-- LOGIN PANEL -->
   <div class="login-panel hidden" id="loginPanel">
     <div class="login-card">
       <h1>Welcome to <span class="logo-accent">NET<span class="red">CLICK</span></span></h1>

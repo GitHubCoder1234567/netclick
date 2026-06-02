@@ -236,3 +236,66 @@ body.intro-screen {
     font-size: 1.8rem;
   }
 }
+/* CINEMATIC ANIMATIONS */
+.intro-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-big {
+  font-size: 6.5rem;
+  font-weight: 900;
+  letter-spacing: -4px;
+  margin: 20px 0;
+  animation: logoGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes logoGlow {
+  from { text-shadow: 0 0 20px #E50914; }
+  to { text-shadow: 0 0 40px #E50914, 0 0 60px #ff3333; }
+}
+
+.tagline {
+  font-size: 1.4rem;
+  color: #bbb;
+  opacity: 0;
+  animation: fadeInUp 1.5s forwards 0.8s;
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeInUp 1.2s forwards;
+}
+
+.fade-in-delay {
+  animation-delay: 0.6s;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 8%;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20% { transform: translateY(0); }
+  50% { transform: translateY(15px); }
+  100% { transform: translateY(0); }
+}
+
+/* Reduce scrolling sensitivity */
+html, body {
+  scroll-behavior: smooth;
+}
