@@ -41,7 +41,6 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       currentGenre = btn.dataset.genre;
       document.getElementById('filtersPanel').classList.remove('hidden');
-      document.getElementById('sidebarGenres').classList.remove('hidden');
       updateSidebarGenreHighlight(currentGenre);
       loadMovies(currentGenre);
     });
