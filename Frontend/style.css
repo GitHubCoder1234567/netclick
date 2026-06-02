@@ -79,6 +79,19 @@ var(--border);
 font-size: 0.85rem; color: var(--text-muted); }
 #logoutBtn { margin-top: 8px; display: block; color: var(--red-main); background: none;
 border: none; cursor: pointer; font-size: 0.85rem; padding: 0; }
+/* nn SIDEBAR GENRES nn */
+.sidebar-genres { margin: 24px 0; padding: 16px 0; border-top: 1px solid var(--border);
+border-bottom: 1px solid var(--border); }
+.sidebar-genres.hidden { display: none; }
+.sidebar-genres-title { font-size: 0.8rem; color: var(--text-muted); padding: 0 24px;
+margin-bottom: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+.sidebar-genres-list { display: flex; flex-direction: column; gap: 6px; padding: 0 12px; }
+.sidebar-genre-btn { width: 100%; padding: 10px 12px; background: none; border: none;
+color: var(--text-muted); text-align: left; cursor: pointer; font-size: 0.85rem;
+border-radius: 4px; transition: all 0.2s; }
+.sidebar-genre-btn:hover { background: #1F1F1F; color: var(--text-primary); }
+.sidebar-genre-btn.active { background: rgba(229,9,20,0.2); color: var(--red-main);
+font-weight: 600; }
 /* nn MAIN CONTENT nn */
 .main-content { margin-left: var(--sidebar-w); padding: 40px 40px; min-height: 100vh; }
 .tab.hidden { display: none; }

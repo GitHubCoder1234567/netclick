@@ -66,6 +66,16 @@ function fallbackSuggestions(prompt) {
       ]
     };
   }
+  if (p.includes('kevin hart')) {
+    return {
+      message: "Here are some great Kevin Hart picks:",
+      suggestions: [
+        { title: "Ride Along",       year: "2014", reason: "Kevin Hart at his comedic best in this buddy cop action-comedy." },
+        { title: "Central Intelligence", year: "2016", reason: "Hart teams up with Dwayne Johnson in a hilarious comedy adventure." },
+        { title: "Jumanji: Welcome to the Jungle", year: "2017", reason: "Hart steals the show in this fun, action-packed comedy reboot." }
+      ]
+    };
+  }
   if (p.includes('will ferrell')) {
     return {
       message: "Here are some great Will Ferrell picks:",
@@ -123,6 +133,36 @@ function fallbackSuggestions(prompt) {
         { title: "The Dark Knight",  year: "2008", reason: "Widely considered one of the greatest superhero films ever made." },
         { title: "Interstellar",     year: "2014", reason: "A visually stunning and emotionally powerful space epic." },
         { title: "Inception",        year: "2010", reason: "A mind-bending thriller that rewards multiple viewings." }
+      ]
+    };
+  }
+  if (p.includes('jim carrey')) {
+    return {
+      message: "Here are some great Jim Carrey picks:",
+      suggestions: [
+        { title: "The Truman Show",  year: "1998", reason: "A brilliant blend of comedy and philosophical depth from Carrey." },
+        { title: "Eternal Sunshine of the Spotless Mind", year: "2004", reason: "Carrey showcases his dramatic range in this mind-bending romance." },
+        { title: "Ace Ventura: Pet Detective", year: "1994", reason: "Peak Jim Carrey comedy — absurd, hilarious, and absolutely unforgettable." }
+      ]
+    };
+  }
+  if (p.includes('eddie murphy')) {
+    return {
+      message: "Here are some great Eddie Murphy picks:",
+      suggestions: [
+        { title: "Beverly Hills Cop", year: "1984", reason: "The iconic role that made Eddie Murphy a star — pure comedy gold." },
+        { title: "The Nutty Professor", year: "1996", reason: "Murphy at his funniest playing multiple hilarious characters." },
+        { title: "Coming to America", year: "1988", reason: "A comedy classic with Murphy delivering some of his best comedic performances." }
+      ]
+    };
+  }
+  if (p.includes('jackie chan')) {
+    return {
+      message: "Here are some great Jackie Chan picks:",
+      suggestions: [
+        { title: "Police Story",     year: "1985", reason: "The film that made Jackie Chan a legend — incredible action and comedy." },
+        { title: "Rush Hour",        year: "1998", reason: "Jackie Chan and Chris Tucker in a perfect blend of action and comedy." },
+        { title: "Supercop",         year: "1992", reason: "Showcases Chan's death-defying stunts and comedic brilliance." }
       ]
     };
   }

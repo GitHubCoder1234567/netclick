@@ -12,6 +12,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   updateGreeting();
   updateProfileDisplay();
+  populateSidebarGenres();
 
   // Sidebar tab switching
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -30,6 +31,8 @@ window.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('active');
       currentGenre = btn.dataset.genre;
       document.getElementById('filtersPanel').classList.remove('hidden');
+      document.getElementById('sidebarGenres').classList.remove('hidden');
+      updateSidebarGenreHighlight(currentGenre);
       loadMovies(currentGenre);
     });
   });
@@ -86,6 +89,30 @@ function updateProfileDisplay() {
   } else {
     avatarEl.innerHTML = `<span>${(currentUser.name || 'U').charAt(0).toUpperCase()}</span>`;
   }
+}
+
+// ── SIDEBAR GENRES ────────────────────────────────────────────
+function populateSidebarGenres() {
+  const genres = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Thriller', 'Horror', 'Romance', 'Crime', 'Animation', 'Documentary'];
+  const genresList = document.getElementById('sidebarGenresList');
+  
+  genresList.innerHTML = genres.map(genre => `
+    <button class="sidebar-genre-btn" data-genre="${genre}">${genre}</button>
+  `).join('');
+  
+  document.querySelectorAll('.sidebar-genre-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.genre-btn').forEach(b => {
+        if (b.dataset.genre === btn.dataset.genre) b.click();
+      });
+    });
+  });
+}
+
+function updateSidebarGenreHighlight(genre) {
+  document.querySelectorAll('.sidebar-genre-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.genre === genre);
+  });
 }
 
 // ── LOAD MOVIES ───────────────────────────────────────────────
