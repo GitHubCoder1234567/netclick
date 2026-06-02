@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NetClick</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="enhancements.css">
 </head>
 <body class="app-screen">
 
@@ -13,8 +14,25 @@
     <div class="sidebar-logo">NET<span class="logo-accent">CLICK</span></div>
     <nav class="sidebar-nav">
       <button class="nav-btn active" data-tab="personalised">Personalised Viewing</button>
+      <button class="nav-btn" data-tab="watchlist">📚 Watchlist</button>
       <button class="nav-btn" data-tab="chatbot">AI Chatbot</button>
     </nav>
+    
+    <!-- USER STATS -->
+    <div class="user-stats" id="userStats">
+      <div class="stat-item">
+        <div class="stat-label">Movies Watched</div>
+        <div class="stat-value" id="watchedCount">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Hours Spent</div>
+        <div class="stat-value" id="hoursCount">0h</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Top Genre</div>
+        <div class="stat-value" id="topGenre">—</div>
+      </div>
+    </div>
     
     <!-- GENRES PANEL -->
     <div class="sidebar-genres" id="sidebarGenres">
@@ -34,8 +52,33 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
 
+    <!-- SEARCH BAR -->
+    <div class="search-bar-container">
+      <div class="search-bar">
+        <input type="text" id="globalSearch" class="search-input" placeholder="Search movies by title, actor, or director...">
+        <button id="searchBtn" class="search-btn">🔍</button>
+      </div>
+      <div class="search-results hidden" id="searchResults">
+        <div class="search-results-list" id="searchResultsList"></div>
+      </div>
+    </div>
+
     <!-- TAB 1: PERSONALISED VIEWING -->
     <section id="tab-personalised" class="tab active">
+      <!-- TRENDING SECTION -->
+      <div class="trending-section" id="trendingSection">
+        <div class="section-header">
+          <h3>🔥 Trending Now</h3>
+          <div class="carousel-controls">
+            <button class="carousel-btn prev" id="trendingPrev">❮</button>
+            <button class="carousel-btn next" id="trendingNext">❯</button>
+          </div>
+        </div>
+        <div class="trending-carousel" id="trendingCarousel">
+          <div class="carousel-track" id="trendingTrack"></div>
+        </div>
+      </div>
+
       <div class="tab-header">
         <div class="header-content">
           <h2 id="greetingText">Hello</h2>
@@ -146,6 +189,19 @@
       </div>
     </section>
 
+    <!-- TAB 3: WATCHLIST -->
+    <section id="tab-watchlist" class="tab hidden">
+      <div class="tab-header">
+        <div class="header-content">
+          <h2>📚 My Watchlist</h2>
+          <p>Movies saved for later</p>
+        </div>
+      </div>
+      <div class="movies-grid" id="watchlistGrid">
+        <div class="placeholder-msg">Your watchlist is empty. Add movies to watch later!</div>
+      </div>
+    </section>
+
   </main>
 
   <!-- MOVIE POPUP -->
@@ -250,5 +306,6 @@
   <div class="toast hidden" id="toast"></div>
 
   <script src="app.js"></script>
+  <script src="enhancements.js"></script>
 </body>
 </html>
