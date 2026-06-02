@@ -296,3 +296,30 @@ color: var(--text-primary); }
 
 /* Streaming badge muted */
 .badge.muted { color: var(--text-muted); border-color: var(--border); }
+/* ==================== RESPONSIVE FIXES ==================== */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-w: 220px;
+  }
+  .main-content {
+    margin-left: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 20px;
+  }
+}
+
+/* Extra safety */
+html, body {
+  overflow-x: hidden;
+}

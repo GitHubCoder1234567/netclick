@@ -1,12 +1,54 @@
 // enhancements.js - All new features for NetClick
-// This file adds: search, trending, watchlist, stats, animations
 
 const BACKEND = 'https://netclick-production.up.railway.app';
 let watchlist = JSON.parse(localStorage.getItem('netclick_watchlist') || '[]');
 let userStats = JSON.parse(localStorage.getItem('netclick_stats') || '{"watched": 0, "hours": 0, "topGenre": "—"}');
 
-// Initialize all enhancements
-window.addEventListener('DOMContentLoaded', () => {
+// ==================== CUSTOM LOADING SCREEN ====================
+function showCustomLoading() {
+  // Hide any original loading screens
+  const originalLoaders = document.querySelectorAll('.loading-screen, .spinner, .loading-container, #loading, .intro');
+  originalLoaders.forEach(el => {
+    if (el) el.style.display = 'none';
+  });
+
+  // Create custom loading screen
+  let loader = document.getElementById('customLoader');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'customLoader';
+    loader.innerHTML = `
+      <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0A0A0A; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999;">
+        <div style="font-size:4.8rem; font-weight:900; margin-bottom:30px;">NET<span style="color:#E50914;">CLICK</span></div>
+        <div style="width:70px; height:70px; border:6px solid #222; border-top-color:#E50914; border-radius:50%; animation:spin 1s linear infinite;"></div>
+        <div style="margin-top:28px; color:#AAA; font-size:1.15rem; letter-spacing:1px;">Finding the best movies for you...</div>
+      </div>
+    `;
+    document.body.appendChild(loader);
+  }
+
+  // Auto hide after 1.8 seconds
+  setTimeout(() => {
+    loader.style.transition = 'opacity 0.8s ease';
+    loader.style.opacity = '0';
+    setTimeout(() => loader.remove(), 800);
+  }, 1800);
+}
+
+// Add CSS animation for spinner
+const style = document.createElement('style');
+style.innerHTML = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(style);
+
+// ==================== INITIALIZE ALL FEATURES ====================
+document.addEventListener('DOMContentLoaded', () => {
+  showCustomLoading();        // ← This now runs first and hides original loader
+
   initSearch();
   initTrendingCarousel();
   initWatchlistFeature();
@@ -75,7 +117,6 @@ function initTrendingCarousel() {
   const track = document.getElementById('trendingTrack');
   if (!track) return;
   
-  // Load trending movies (using top rated for now)
   loadTrendingMovies();
   
   document.getElementById('trendingPrev')?.addEventListener('click', () => scrollCarousel(-1));
@@ -86,13 +127,11 @@ async function loadTrendingMovies() {
   const track = document.getElementById('trendingTrack');
   if (!track) return;
   
-  // This would ideally call a trending endpoint - for now use recommendations
   const genres = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Thriller'];
   const randomGenre = genres[Math.floor(Math.random() * genres.length)];
   
   try {
-    // We'll use the recommender for top movies
-    const movies = await fetch(`${BACKEND}/api/recommendations/${currentUser?.id}/${randomGenre}`)
+    const movies = await fetch(`${BACKEND}/api/recommendations/${currentUser?.id || 1}/${randomGenre}`)
       .then(r => r.json())
       .then(d => (d.movies || []).slice(0, 6));
     
@@ -218,12 +257,10 @@ function incrementStats(hours = 2) {
 
 // ── MICRO ANIMATIONS ────────────────────────────────────
 function initMicroAnimations() {
-  // Skeleton loaders on load
   observeLoadingStates();
 }
 
 function observeLoadingStates() {
-  // Add loading skeleton animation class when movies load
   const observer = new MutationObserver(() => {
     document.querySelectorAll('.loading-movies').forEach(el => {
       el.classList.add('skeleton-animate');
@@ -243,7 +280,6 @@ function displayRatingDistribution(detail) {
   const rating = detail.vote_average;
   const voteCount = detail.vote_count || 1;
   
-  // Simulate distribution
   const distribution = [
     { stars: '5★', percent: 35 },
     { stars: '4★', percent: 25 },
@@ -269,20 +305,14 @@ function displayRatingDistribution(detail) {
       `).join('')}
     </div>
   `;
-}
+};
 
 // Override openMoviePopup to add new features
 const originalOpenMoviePopup = window.openMoviePopup;
 window.openMoviePopup = async function(movieId) {
-  // Call original
   await originalOpenMoviePopup.call(this, movieId);
   
-  // Add new features
   updateWatchlistBtn();
   displayRatingDistribution(currentMovie || {});
-  
-  // Increment stats when they view (rough tracking)
-  if (currentMovie) {
-    incrementStats(0); // Don't add hours on just view
-  }
+  if (currentMovie) incrementStats(0);
 };
