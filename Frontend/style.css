@@ -323,3 +323,35 @@ color: var(--text-primary); }
 html, body {
   overflow-x: hidden;
 }
+/* ==================== RESPONSIVE SIDEBAR FIX ==================== */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-w, 280px);
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.main-content {
+  margin-left: var(--sidebar-w, 280px);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+html, body {
+  overflow-x: hidden;
+}
