@@ -1,10 +1,4 @@
-/* intro.css - NetClick Welcome Intro */
-:root {
-  --bg-primary: #0A0A0A;
-  --red-main: #E50914;
-  --text-primary: #F5F5F5;
-  --text-muted: #999999;
-}
+/* intro.css - NetClick Wipe Reveal */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -12,136 +6,152 @@
   padding: 0;
 }
 
+:root {
+  --red: #E50914;
+  --red-glow: rgba(229, 9, 20, 0.45);
+  --bg: #080808;
+  --text: #F5F5F5;
+  --muted: #888;
+}
+
 body.intro-screen {
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  background: var(--bg);
   font-family: 'Segoe UI', system-ui, sans-serif;
-  background: linear-gradient(135deg, #0A0A0A, #1a0a0a);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* INTRO CONTAINER */
+/* ── INTRO CONTAINER ── */
 .intro-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 40px;
+  transition: opacity 0.9s ease;
 }
 
-.letter-display {
-  font-size: clamp(4rem, 30vw, 35rem);
-  font-weight: 900;
-  letter-spacing: -8px;
-  color: var(--text-primary);
-  text-shadow: 0 20px 60px rgba(229, 9, 20, 0.3);
-  animation: letterPulse 0.8s ease-out;
-  will-change: transform;
-}
-
-@keyframes letterPulse {
-  0% {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* PROGRESS DOTS */
-.progress-dots {
-  display: flex;
-  gap: 12px;
-  position: absolute;
-  bottom: 80px;
-}
-
-.progress-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(229, 9, 20, 0.3);
-  transition: all 0.5s ease;
-  cursor: pointer;
-}
-
-.progress-dot.active {
-  background: var(--red-main);
-  width: 30px;
-  border-radius: 5px;
-  box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
-}
-
-/* SCROLL HINT */
-.scroll-hint {
-  position: absolute;
-  bottom: 40px;
+/* ── WIPE SCENE ── */
+.wipe-scene {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  animation: fadeInOut 2s infinite;
+  gap: 28px;
+  overflow: visible;
 }
 
-.scroll-arrow {
-  font-size: 1.5rem;
-  animation: bounce 2s infinite;
+/* ── WORDMARK ── */
+.wipe-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  position: relative;
+  z-index: 2;
 }
 
-@keyframes fadeInOut {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+.wipe-letter {
+  font-size: clamp(3.5rem, 10vw, 8rem);
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -2px;
+  font-family: 'Arial Black', 'Segoe UI Black', sans-serif;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: letterRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(var(--i) * 0.07s);
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(10px); }
+.wipe-letter.red-letter {
+  color: var(--red);
 }
 
-/* SKIP BUTTON */
+@keyframes letterRise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── SWEEP LINE ── */
+.sweep-line {
+  position: absolute;
+  top: 0;
+  left: -8%;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--red-glow) 30%,
+    rgba(229, 9, 20, 0.9) 50%,
+    var(--red-glow) 70%,
+    transparent 100%
+  );
+  filter: blur(4px);
+  z-index: 3;
+  pointer-events: none;
+  animation: sweepAcross 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.7s forwards;
+}
+
+@keyframes sweepAcross {
+  0%   { left: -10%; width: 8%;  opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { left: 46%;  width: 12%; opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: 108%; width: 8%;  opacity: 0; }
+}
+
+/* ── TAGLINE ── */
+.tagline {
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0;
+  animation: taglineFade 0.8s ease forwards 1.6s;
+}
+
+@keyframes taglineFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SKIP BUTTON ── */
 .skip-btn {
   position: fixed;
   top: 20px;
   right: 20px;
-  padding: 10px 20px;
-  background: rgba(229, 9, 20, 0.2);
-  border: 1px solid rgba(229, 9, 20, 0.5);
-  color: var(--red-main);
+  padding: 9px 20px;
+  background: rgba(229, 9, 20, 0.12);
+  border: 1px solid rgba(229, 9, 20, 0.4);
+  color: var(--red);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
-  z-index: 10;
-  transition: all 0.3s;
+  font-size: 0.85rem;
+  font-family: inherit;
+  z-index: 20;
+  transition: background 0.2s, box-shadow 0.2s;
+  opacity: 0;
+  animation: taglineFade 0.5s ease forwards 0.3s;
 }
 
 .skip-btn:hover {
-  background: rgba(229, 9, 20, 0.3);
-  border-color: var(--red-main);
-  box-shadow: 0 0 15px rgba(229, 9, 20, 0.4);
+  background: rgba(229, 9, 20, 0.25);
+  box-shadow: 0 0 14px rgba(229, 9, 20, 0.35);
 }
 
-/* LOGIN PANEL */
+/* ── LOGIN PANEL ── */
 .login-panel {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 0.96);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  backdrop-filter: blur(10px);
-  animation: fadeIn 0.8s ease;
+  animation: fadeIn 0.7s ease;
 }
 
 .login-panel.hidden {
@@ -150,152 +160,91 @@ body.intro-screen {
 
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 .login-card {
   text-align: center;
-  background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
-  border: 1px solid rgba(229, 9, 20, 0.3);
-  border-radius: 16px;
-  padding: 60px 40px;
-  max-width: 500px;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  background: #111;
+  border: 1px solid rgba(229, 9, 20, 0.25);
+  border-radius: 14px;
+  padding: 56px 44px;
+  max-width: 480px;
+  width: 90%;
+  animation: cardRise 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.login-card h1 {
-  font-size: 2.5rem;
+@keyframes cardRise {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.login-logo {
+  font-size: 2.8rem;
   font-weight: 900;
-  margin-bottom: 16px;
   letter-spacing: -1px;
+  color: var(--text);
+  font-family: 'Arial Black', sans-serif;
+  margin-bottom: 12px;
 }
 
-.logo-accent {
-  color: var(--text-primary);
+.login-logo .red {
+  color: var(--red);
 }
 
-.red {
-  color: var(--red-main);
-}
-
-.login-card p {
-  color: var(--text-muted);
-  margin-bottom: 32px;
-  font-size: 1rem;
+.login-sub {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-bottom: 36px;
+  line-height: 1.5;
 }
 
 .btn-primary {
+  display: block;
   width: 100%;
   padding: 14px;
-  background: var(--red-main);
-  color: white;
+  background: var(--red);
+  color: #fff;
   border: none;
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background 0.2s, box-shadow 0.2s;
   margin-bottom: 12px;
 }
 
 .btn-primary:hover {
-  background: #FF2E35;
-  box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
+  background: #ff1e27;
+  box-shadow: 0 8px 24px rgba(229, 9, 20, 0.4);
 }
 
 .btn-back {
+  display: block;
   width: 100%;
   padding: 12px;
   background: transparent;
-  color: var(--text-muted);
-  border: 1px solid rgba(229, 9, 20, 0.3);
+  color: var(--muted);
+  border: 1px solid rgba(229, 9, 20, 0.25);
   border-radius: 6px;
   font-size: 0.9rem;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
 .btn-back:hover {
-  color: var(--red-main);
-  border-color: var(--red-main);
-  background: rgba(229, 9, 20, 0.1);
+  color: var(--red);
+  border-color: var(--red);
+  background: rgba(229, 9, 20, 0.08);
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .letter-display {
-    font-size: clamp(3rem, 25vw, 20rem);
-  }
-  
+@media (max-width: 480px) {
   .login-card {
     padding: 40px 24px;
   }
-  
-  .login-card h1 {
-    font-size: 1.8rem;
+  .login-logo {
+    font-size: 2.2rem;
   }
-}
-/* CINEMATIC ANIMATIONS */
-.intro-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.logo-big {
-  font-size: 6.5rem;
-  font-weight: 900;
-  letter-spacing: -4px;
-  margin: 20px 0;
-  animation: logoGlow 3s ease-in-out infinite alternate;
-}
-
-@keyframes logoGlow {
-  from { text-shadow: 0 0 20px #E50914; }
-  to { text-shadow: 0 0 40px #E50914, 0 0 60px #ff3333; }
-}
-
-.tagline {
-  font-size: 1.4rem;
-  color: #bbb;
-  opacity: 0;
-  animation: fadeInUp 1.5s forwards 0.8s;
-}
-
-.fade-in {
-  opacity: 0;
-  animation: fadeInUp 1.2s forwards;
-}
-
-.fade-in-delay {
-  animation-delay: 0.6s;
-}
-
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.scroll-hint {
-  position: absolute;
-  bottom: 8%;
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%, 20% { transform: translateY(0); }
-  50% { transform: translateY(15px); }
-  100% { transform: translateY(0); }
-}
-
-/* Reduce scrolling sensitivity */
-html, body {
-  scroll-behavior: smooth;
 }
