@@ -26,6 +26,13 @@ window.addEventListener('DOMContentLoaded', () => {
   populateSidebarGenres();
   loadUserStats();
 
+  // Apply UI language on page load
+  const savedLang = currentUser.preferred_language || 'en';
+  localStorage.setItem('netclick_ui_lang', savedLang);
+  if (typeof applyTranslations === 'function') applyTranslations();
+  // Update greeting with correct prefix
+  updateGreeting();
+
   // Sidebar tab switching
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -63,6 +70,23 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('popupClose').addEventListener('click', () => {
     document.getElementById('moviePopup').classList.add('hidden');
+  });
+
+  // Click outside popup card to close
+  document.getElementById('moviePopup').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('moviePopup')) {
+      document.getElementById('moviePopup').classList.add('hidden');
+    }
+  });
+  document.getElementById('profilePanel').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('profilePanel')) {
+      document.getElementById('profilePanel').classList.add('hidden');
+    }
+  });
+  document.getElementById('ratingPopup').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('ratingPopup')) {
+      document.getElementById('ratingPopup').classList.add('hidden');
+    }
   });
 
   document.getElementById('watchedBtn').addEventListener('click', markWatched);
@@ -106,8 +130,9 @@ function updateStatsDisplay(data) {
 
 // ── GREETING & PROFILE DISPLAY ────────────────────────────────
 function updateGreeting() {
-  const name = currentUser.name || 'there';
-  document.getElementById('greetingText').textContent = `Hello, ${name}`;
+  const name   = currentUser.name || 'there';
+  const prefix = (typeof t === 'function') ? t('greeting_prefix') : 'Hello';
+  document.getElementById('greetingText').textContent = `${prefix}, ${name}`;
 }
 
 function updateProfileDisplay() {
@@ -491,7 +516,13 @@ async function saveLanguage() {
   if (data.success) {
     currentUser = { ...currentUser, preferred_language: language };
     localStorage.setItem('netclick_user', JSON.stringify(currentUser));
-    showToast('Language preference saved!');
+    // Update UI language
+    const uiLang = language || 'en';
+    localStorage.setItem('netclick_ui_lang', uiLang);
+    if (typeof applyTranslations === 'function') applyTranslations();
+    // Re-apply greeting
+    updateGreeting();
+    showToast(uiLang === 'en' ? 'Language updated!' : 'Language / Idioma actualizado!');
   }
 }
 
@@ -541,3 +572,7 @@ function showToast(msg) {
     toast.classList.add('hidden');
   }, 2500);
 }
+
+// ── TRANSLATIONS ON LOAD ──────────────────────────────────────
+// Apply translations right at startup
+if (typeof applyTranslations === 'function') applyTranslations();

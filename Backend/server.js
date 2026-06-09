@@ -13,21 +13,65 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// ── AUTH ──────────────────────────────────────────────────────
-app.post('/api/login', (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email required' });
+// ── SIMPLE PASSWORD HASH (no bcrypt needed for school project) ──
+function hashPassword(password) {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const chr = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  return 'h_' + Math.abs(hash).toString(36) + '_' + password.length;
+}
 
-  db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
-    if (user) return res.json({ success: true, user });
-    const name = email.split('@')[0];
-    db.run('INSERT INTO users (email, name) VALUES (?, ?)', [email, name],
-      function() {
+// ── REGISTER ──────────────────────────────────────────────────
+app.post('/api/register', (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password)
+    return res.status(400).json({ error: 'All fields required' });
+  if (password.length < 6)
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+  const hashed = hashPassword(password);
+
+  db.get('SELECT id FROM users WHERE email = ?', [email], (err, existing) => {
+    if (existing) return res.status(400).json({ error: 'An account with this email already exists' });
+
+    db.run(
+      'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)',
+      [email, name, hashed],
+      function(err) {
+        if (err) return res.status(500).json({ error: err.message });
         db.get('SELECT * FROM users WHERE id = ?', [this.lastID],
-          (e, newUser) => res.json({ success: true, user: newUser })
+          (e, user) => {
+            // Strip password_hash before sending to client
+            const { password_hash, ...safeUser } = user;
+            res.json({ success: true, user: safeUser });
+          }
         );
       }
     );
+  });
+});
+
+// ── LOGIN ─────────────────────────────────────────────────────
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+
+  db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
+    if (!user) return res.status(401).json({ error: 'No account found with this email' });
+
+    // If user has no password (legacy accounts) accept any password
+    if (user.password_hash) {
+      const hashed = hashPassword(password || '');
+      if (hashed !== user.password_hash) {
+        return res.status(401).json({ error: 'Incorrect password' });
+      }
+    }
+
+    const { password_hash, ...safeUser } = user;
+    res.json({ success: true, user: safeUser });
   });
 });
 
@@ -37,9 +81,7 @@ app.post('/api/profile/username', (req, res) => {
   if (!userId || !name) return res.status(400).json({ error: 'Missing fields' });
   db.run('UPDATE users SET name = ? WHERE id = ?', [name, userId], function(err) {
     if (err) return res.status(500).json({ error: err.message });
-    db.get('SELECT * FROM users WHERE id = ?', [userId], (e, user) => {
-      res.json({ success: true, user });
-    });
+    res.json({ success: true });
   });
 });
 
@@ -48,9 +90,7 @@ app.post('/api/profile/email', (req, res) => {
   if (!userId || !email) return res.status(400).json({ error: 'Missing fields' });
   db.run('UPDATE users SET email = ? WHERE id = ?', [email, userId], function(err) {
     if (err) return res.status(500).json({ error: 'Email already in use' });
-    db.get('SELECT * FROM users WHERE id = ?', [userId], (e, user) => {
-      res.json({ success: true, user });
-    });
+    res.json({ success: true });
   });
 });
 
@@ -74,10 +114,10 @@ app.post('/api/profile/language', (req, res) => {
 
 app.delete('/api/profile/:userId', (req, res) => {
   const { userId } = req.params;
-  db.run('DELETE FROM watch_history WHERE user_id = ?', [userId]);
-  db.run('DELETE FROM ratings WHERE user_id = ?', [userId]);
-  db.run('DELETE FROM preferences WHERE user_id = ?', [userId]);
-  db.run('DELETE FROM chatbot_history WHERE user_id = ?', [userId]);
+  db.run('DELETE FROM watch_history WHERE user_id = ?',  [userId]);
+  db.run('DELETE FROM ratings WHERE user_id = ?',        [userId]);
+  db.run('DELETE FROM preferences WHERE user_id = ?',    [userId]);
+  db.run('DELETE FROM chatbot_history WHERE user_id = ?',[userId]);
   db.run('DELETE FROM users WHERE id = ?', [userId], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
@@ -87,38 +127,25 @@ app.delete('/api/profile/:userId', (req, res) => {
 // ── STATS ─────────────────────────────────────────────────────
 app.get('/api/stats/:userId', (req, res) => {
   const { userId } = req.params;
-
-  // Count total movies watched
-  db.get(
-    'SELECT COUNT(*) as total FROM watch_history WHERE user_id = ?',
-    [userId],
+  db.get('SELECT COUNT(*) as total FROM watch_history WHERE user_id = ?', [userId],
     (err, countRow) => {
-      if (err) return res.status(500).json({ error: err.message });
-
       const watchedCount = countRow?.total || 0;
-
-      // Estimate hours: average movie ~1.8hrs, multiply by count
-      const totalHours = Math.round(watchedCount * 1.8);
-
-      // Find top genre from preferences table
+      const totalHours   = Math.round(watchedCount * 1.8);
       db.get(
         'SELECT genre FROM preferences WHERE user_id = ? ORDER BY score DESC LIMIT 1',
         [userId],
         (err2, genreRow) => {
-          // Fallback: count genres from watch_history if preferences is empty
           if (!genreRow) {
             db.get(
               `SELECT genres, COUNT(*) as cnt FROM watch_history
                WHERE user_id = ? AND genres IS NOT NULL AND genres != ''
                GROUP BY genres ORDER BY cnt DESC LIMIT 1`,
               [userId],
-              (err3, histRow) => {
-                res.json({
-                  watched_count: watchedCount,
-                  total_hours:   totalHours,
-                  top_genre:     histRow?.genres || '—'
-                });
-              }
+              (err3, histRow) => res.json({
+                watched_count: watchedCount,
+                total_hours:   totalHours,
+                top_genre:     histRow?.genres || '—'
+              })
             );
           } else {
             res.json({
@@ -137,18 +164,8 @@ app.get('/api/stats/:userId', (req, res) => {
 app.get('/api/recommendations/:userId/:genre', async (req, res) => {
   try {
     const { userId, genre } = req.params;
-    const filters = req.query;
-    const movies  = await recommender.getRecommendations(userId, genre, filters);
+    const movies = await recommender.getRecommendations(userId, genre, req.query);
     res.json({ movies });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.get('/api/search', async (req, res) => {
-  try {
-    const results = await tmdb.searchMovies(req.query.q);
-    res.json({ results });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -175,10 +192,8 @@ app.post('/api/watched', (req, res) => {
 
 app.post('/api/rate', (req, res) => {
   const { userId, movieId, rating, genres } = req.body;
-  db.run(
-    'INSERT OR REPLACE INTO ratings (user_id, movie_id, rating) VALUES (?,?,?)',
-    [userId, movieId, rating]
-  );
+  db.run('INSERT OR REPLACE INTO ratings (user_id, movie_id, rating) VALUES (?,?,?)',
+    [userId, movieId, rating]);
   if (genres) {
     genres.split(',').forEach(genre => {
       const change = rating === 1 ? 1.5 : -1.0;

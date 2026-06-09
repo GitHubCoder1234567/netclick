@@ -1,4 +1,3 @@
-<!-- frontend/login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,58 +5,159 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NetClick — Login</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  .auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .auth-tab  { flex: 1; padding: 12px; background: none; border: none; color: var(--text-muted);
+               font-size: 0.95rem; cursor: pointer; border-bottom: 2px solid transparent;
+               margin-bottom: -1px; transition: all 0.2s; }
+  .auth-tab.active { color: var(--text-primary); border-bottom-color: var(--red-main); }
+  .auth-form { display: none; }
+  .auth-form.active { display: block; }
+  .input-group { margin-bottom: 14px; }
+  .demo-hint  { margin-top: 16px; font-size: 0.82rem; color: var(--text-muted); text-align:center; }
+  .error-msg  { color: #ff4444; font-size: 0.85rem; margin-top: 8px; display:none; }
+</style>
 </head>
 <body class="login-screen">
 <div class="login-container">
-<h1 class="logo">NET<span class="logo-accent">CLICK</span></h1>
-<div class="login-card">
-<h2>Sign In</h2>
-<p class="login-sub">Enter your email to access NetClick</p>
-<div class="input-group">
-<input type="email" id="emailInput"
-placeholder="your@email.com" class="text-input">
+  <h1 class="logo">NET<span class="logo-accent">CLICK</span></h1>
+
+  <div class="login-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignIn">Sign In</button>
+      <button class="auth-tab"        id="tabSignUp">Create Account</button>
+    </div>
+
+    <!-- SIGN IN -->
+    <div class="auth-form active" id="formSignIn">
+      <div class="input-group">
+        <input type="email" id="loginEmail" placeholder="your@email.com" class="text-input">
+      </div>
+      <div class="input-group">
+        <input type="password" id="loginPassword" placeholder="Password" class="text-input">
+      </div>
+      <p class="error-msg" id="loginError"></p>
+      <button id="loginBtn" class="btn-primary">Sign In</button>
+      <p class="demo-hint">Demo access: <strong>demo@netclick.com</strong> / <strong>demo1234</strong></p>
+    </div>
+
+    <!-- SIGN UP -->
+    <div class="auth-form" id="formSignUp">
+      <div class="input-group">
+        <input type="text"  id="signupName"     placeholder="Your name"       class="text-input">
+      </div>
+      <div class="input-group">
+        <input type="email" id="signupEmail"    placeholder="your@email.com"  class="text-input">
+      </div>
+      <div class="input-group">
+        <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" class="text-input">
+      </div>
+      <div class="input-group">
+        <input type="password" id="signupConfirm"  placeholder="Confirm password"       class="text-input">
+      </div>
+      <p class="error-msg" id="signupError"></p>
+      <button id="signupBtn" class="btn-primary">Create Account</button>
+    </div>
+  </div>
+
+  <div class="streaming-links">
+    <p>After logging in, link your streaming services:</p>
+    <div class="service-badges">
+      <span class="badge">Netflix</span>
+      <span class="badge">Disney+</span>
+      <span class="badge">Stan</span>
+      <span class="badge">Prime Video</span>
+    </div>
+    <p class="note">For this demo, watch history is pre-loaded for you</p>
+  </div>
 </div>
-<button id="loginBtn" class="btn-primary">Continue</button>
-<p class="demo-hint">
-Demo access: <strong>demo@netclick.com</strong>
-</p>
-</div>
-<div class="streaming-links">
-<p>After logging in, link your streaming services:</p>
-<div class="service-badges">
-<span class="badge">Netflix</span>
-<span class="badge">Disney+</span>
-<span class="badge">Stan</span>
-<span class="badge">Prime Video</span>
-</div>
-<p class="note">For this demo, watch history is pre-loaded for you</p>
-</div>
-</div>
+
 <script>
 const BACKEND = 'https://netclick-production.up.railway.app';
 
-// Check if user has seen intro
 window.addEventListener('DOMContentLoaded', () => {
-  const hasSeenIntro = localStorage.getItem('netclick_intro_seen');
-  if (!hasSeenIntro) {
+  if (!localStorage.getItem('netclick_intro_seen')) {
     window.location.href = 'intro.html';
   }
 });
 
-document.getElementById('loginBtn').addEventListener('click', async () => {
-const email = document.getElementById('emailInput').value.trim();
-if (!email) return alert('Please enter your email');
-const res = await fetch(`${BACKEND}/api/login`, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ email })
+// Tab switching
+document.getElementById('tabSignIn').addEventListener('click', () => switchTab('in'));
+document.getElementById('tabSignUp').addEventListener('click', () => switchTab('up'));
 
-});
-const data = await res.json();
-if (data.success) {
-localStorage.setItem('netclick_user', JSON.stringify(data.user));
-window.location.href = 'app.html';
+function switchTab(tab) {
+  document.getElementById('tabSignIn').classList.toggle('active', tab === 'in');
+  document.getElementById('tabSignUp').classList.toggle('active', tab === 'up');
+  document.getElementById('formSignIn').classList.toggle('active', tab === 'in');
+  document.getElementById('formSignUp').classList.toggle('active', tab === 'up');
 }
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+// SIGN IN
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) return showError('loginError', 'Please fill in all fields');
+
+  try {
+    const res  = await fetch(`${BACKEND}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('netclick_user', JSON.stringify(data.user));
+      window.location.href = 'app.html';
+    } else {
+      showError('loginError', data.error || 'Invalid email or password');
+    }
+  } catch (e) {
+    showError('loginError', 'Connection error. Please try again.');
+  }
+});
+
+// Allow Enter key on sign in
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+// SIGN UP
+document.getElementById('signupBtn').addEventListener('click', async () => {
+  const name     = document.getElementById('signupName').value.trim();
+  const email    = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const confirm  = document.getElementById('signupConfirm').value;
+
+  if (!name || !email || !password || !confirm)
+    return showError('signupError', 'Please fill in all fields');
+  if (password.length < 6)
+    return showError('signupError', 'Password must be at least 6 characters');
+  if (password !== confirm)
+    return showError('signupError', 'Passwords do not match');
+
+  try {
+    const res  = await fetch(`${BACKEND}/api/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('netclick_user', JSON.stringify(data.user));
+      window.location.href = 'app.html';
+    } else {
+      showError('signupError', data.error || 'Could not create account');
+    }
+  } catch (e) {
+    showError('signupError', 'Connection error. Please try again.');
+  }
 });
 </script>
 </body>

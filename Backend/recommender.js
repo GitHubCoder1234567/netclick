@@ -8,16 +8,26 @@ async function getRecommendations(userId, genre, filters = {}) {
   const genreId    = tmdb.GENRE_MAP[genre];
   if (!genreId) return [];
 
-  const language  = filters.language || 'en';
-  const minRating = filters.minRating ? parseFloat(filters.minRating) : 0;
-  const minYear   = filters.minYear   ? parseInt(filters.minYear)     : 0;
-  const maxRuntime= filters.maxRuntime? parseInt(filters.maxRuntime)  : 9999;
+  const language       = filters.language     || 'en';
+  const minRating      = filters.minRating    ? parseFloat(filters.minRating) : 0;
+  const minYear        = filters.minYear      ? parseInt(filters.minYear)     : 0;
+  const maxRuntime     = filters.maxRuntime   ? parseInt(filters.maxRuntime)  : 9999;
+  const runtimeRange   = filters.runtimeRange || '';
 
-  // Fetch 6 pages to get ~120 candidates
+  // Pass all filters to TMDB so the API does the heavy lifting
+  const tmdbFilters = {
+    minRating,
+    minYear,
+    maxRuntime:   maxRuntime < 9999 ? maxRuntime : null,
+    runtimeRange: runtimeRange || null,
+    language,
+  };
+
+  // Fetch up to 6 pages with filters applied at TMDB level
   let movies = [];
   for (let page = 1; page <= 6; page++) {
     try {
-      const pageMovies = await tmdb.getMoviesByGenre(genreId, page, language);
+      const pageMovies = await tmdb.getMoviesByGenre(genreId, page, language, tmdbFilters);
       movies = movies.concat(pageMovies);
     } catch(e) { break; }
   }
@@ -30,15 +40,14 @@ async function getRecommendations(userId, genre, filters = {}) {
     return true;
   });
 
-  // Filter out already-watched
+  // Remove already-watched
   movies = movies.filter(m => !watched.includes(m.id));
 
-  // Apply rating filter
+  // Secondary client-side safety filters (in case TMDB didn't filter perfectly)
   if (minRating > 0) {
     movies = movies.filter(m => m.vote_average >= minRating);
   }
 
-  // Apply year filter
   if (minYear > 0) {
     movies = movies.filter(m => {
       if (!m.release_date) return false;
@@ -46,13 +55,18 @@ async function getRecommendations(userId, genre, filters = {}) {
     });
   }
 
-  // Score and sort
-  movies = movies.map(movie => ({
-    ...movie,
-    netclick_score: scoreMovie(movie, genreScore)
-  })).sort((a, b) => b.netclick_score - a.netclick_score);
+  // Client-side runtime filter as backup
+  if (maxRuntime < 9999 || runtimeRange) {
+    // Note: discover results don't include runtime field,
+    // so we rely on TMDB filtering above. Skip here to avoid
+    // filtering out valid movies with missing runtime data.
+  }
 
-  // Return top 20
+  // Score and sort
+  movies = movies
+    .map(movie => ({ ...movie, netclick_score: scoreMovie(movie, genreScore) }))
+    .sort((a, b) => b.netclick_score - a.netclick_score);
+
   return movies.slice(0, 20).map(m => ({
     id:           m.id,
     title:        m.title,
@@ -78,9 +92,9 @@ function generateReason(genre, genreScore, rating, releaseDate) {
   const year = releaseDate ? releaseDate.split('-')[0] : '';
   const r    = rating.toFixed(1);
   if (genreScore >= 5)
-    return `Based on your strong love of ${genre} films and this movie's ${r}/10 rating, NetClick is confident you'll enjoy this.`;
+    return `Based on your love of ${genre} films and this movie's ${r}/10 rating, NetClick is confident you'll enjoy this.`;
   if (genreScore >= 2)
-    return `You enjoy ${genre} content, and this highly rated film (${r}/10${year ? `, ${year}` : ''}) fits well with your viewing history.`;
+    return `You enjoy ${genre} content, and this ${r}/10 rated film${year ? ` from ${year}` : ''} fits your history well.`;
   return `A top-rated ${genre} film (${r}/10${year ? ` from ${year}` : ''}) that matches your viewing profile.`;
 }
 
