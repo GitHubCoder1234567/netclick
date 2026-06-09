@@ -1,4 +1,4 @@
-/* intro.css - NetClick Wipe Reveal */
+/* intro.css - NetClick Cursor Click Intro */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -8,7 +8,6 @@
 
 :root {
   --red: #E50914;
-  --red-glow: rgba(229, 9, 20, 0.45);
   --bg: #080808;
   --text: #F5F5F5;
   --muted: #888;
@@ -20,6 +19,7 @@ body.intro-screen {
   overflow: hidden;
   background: var(--bg);
   font-family: 'Segoe UI', system-ui, sans-serif;
+  cursor: none;
 }
 
 /* ── INTRO CONTAINER ── */
@@ -29,16 +29,16 @@ body.intro-screen {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.9s ease;
+  transition: opacity 0.8s ease;
 }
 
-/* ── WIPE SCENE ── */
+/* ── SCENE ── */
 .wipe-scene {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
+  gap: 32px;
   overflow: visible;
 }
 
@@ -49,6 +49,13 @@ body.intro-screen {
   gap: 0;
   position: relative;
   z-index: 2;
+  /* click effect applied via JS */
+  transition: transform 0.12s cubic-bezier(0.36, 0, 0.66, -0.56);
+  transform-origin: center center;
+}
+
+.wipe-wordmark.clicked {
+  transform: scale(0.88);
 }
 
 .wipe-letter {
@@ -60,11 +67,22 @@ body.intro-screen {
   opacity: 0;
   transform: translateY(30px);
   animation: letterRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: calc(var(--i) * 0.07s);
+  animation-delay: calc(var(--i) * 0.08s);
+  display: inline-block;
 }
 
 .wipe-letter.red-letter {
   color: var(--red);
+}
+
+/* CLICK part highlight on hover-in */
+#clickPart {
+  position: relative;
+  transition: text-shadow 0.2s;
+}
+
+#clickPart.cursor-hover {
+  text-shadow: 0 0 30px rgba(229, 9, 20, 0.8);
 }
 
 @keyframes letterRise {
@@ -74,43 +92,62 @@ body.intro-screen {
   }
 }
 
-/* ── SWEEP LINE ── */
-.sweep-line {
-  position: absolute;
-  top: 0;
-  left: -8%;
-  width: 0;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--red-glow) 30%,
-    rgba(229, 9, 20, 0.9) 50%,
-    var(--red-glow) 70%,
-    transparent 100%
-  );
-  filter: blur(4px);
-  z-index: 3;
+/* ── ANIMATED CURSOR ── */
+.cursor-pointer {
+  position: fixed;
   pointer-events: none;
-  animation: sweepAcross 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.7s forwards;
+  z-index: 50;
+  opacity: 0;
+  /* JS controls left/top and opacity */
+  transition: opacity 0.3s ease;
 }
 
-@keyframes sweepAcross {
-  0%   { left: -10%; width: 8%;  opacity: 0; }
-  10%  { opacity: 1; }
-  50%  { left: 46%;  width: 12%; opacity: 1; }
-  90%  { opacity: 1; }
-  100% { left: 108%; width: 8%;  opacity: 0; }
+.cursor-pointer svg {
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+}
+
+/* click-press animation on the cursor itself */
+.cursor-pointer.pressing {
+  animation: cursorPress 0.15s ease forwards;
+}
+
+@keyframes cursorPress {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.82); }
+  100% { transform: scale(1); }
+}
+
+/* ripple on click */
+.cursor-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(229, 9, 20, 0.35);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cursor-ripple.burst {
+  animation: rippleBurst 0.5s ease-out forwards;
+}
+
+@keyframes rippleBurst {
+  0%   { width: 0;    height: 0;    opacity: 0.8; }
+  100% { width: 90px; height: 90px; opacity: 0; }
 }
 
 /* ── TAGLINE ── */
 .tagline {
-  font-size: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.72rem, 1.8vw, 0.95rem);
   letter-spacing: 0.35em;
   text-transform: uppercase;
   color: var(--muted);
   opacity: 0;
-  animation: taglineFade 0.8s ease forwards 1.6s;
+  animation: taglineFade 0.8s ease forwards 1.4s;
 }
 
 @keyframes taglineFade {
@@ -134,7 +171,7 @@ body.intro-screen {
   z-index: 20;
   transition: background 0.2s, box-shadow 0.2s;
   opacity: 0;
-  animation: taglineFade 0.5s ease forwards 0.3s;
+  animation: taglineFade 0.5s ease forwards 0.2s;
 }
 
 .skip-btn:hover {
@@ -188,9 +225,7 @@ body.intro-screen {
   margin-bottom: 12px;
 }
 
-.login-logo .red {
-  color: var(--red);
-}
+.login-logo .red { color: var(--red); }
 
 .login-sub {
   color: var(--muted);
@@ -241,10 +276,6 @@ body.intro-screen {
 }
 
 @media (max-width: 480px) {
-  .login-card {
-    padding: 40px 24px;
-  }
-  .login-logo {
-    font-size: 2.2rem;
-  }
+  .login-card { padding: 40px 24px; }
+  .login-logo { font-size: 2.2rem; }
 }
