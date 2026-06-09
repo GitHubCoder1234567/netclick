@@ -85,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function goToLogin() {
-  localStorage.setItem('netclick_intro_seen', 'true');
   window.location.href = 'login.html';
 }
 

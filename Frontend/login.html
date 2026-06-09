@@ -75,12 +75,6 @@
 <script>
 const BACKEND = 'https://netclick-production.up.railway.app';
 
-window.addEventListener('DOMContentLoaded', () => {
-  if (!localStorage.getItem('netclick_intro_seen')) {
-    window.location.href = 'intro.html';
-  }
-});
-
 // Tab switching
 document.getElementById('tabSignIn').addEventListener('click', () => switchTab('in'));
 document.getElementById('tabSignUp').addEventListener('click', () => switchTab('up'));

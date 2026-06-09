@@ -3,19 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NetClick</title>
+  <title>NetClick - Welcome</title>
+  <link rel="stylesheet" href="intro.css">
 </head>
-<body>
-  <script>
-    // Skip old loading and go straight to app
-    window.addEventListener('DOMContentLoaded', () => {
-      const user = localStorage.getItem('netclick_user');
-      if (user) {
-        window.location.href = 'app.html';
-      } else {
-        window.location.href = 'login.html';
-      }
-    });
-  </script>
+<body class="intro-screen">
+
+  <button class="skip-btn" id="skipBtn">Skip Intro</button>
+
+  <div class="intro-container" id="introContainer">
+    <div class="wipe-scene" id="wipeScene">
+
+      <div class="wipe-wordmark" id="wordmark">
+        <span class="wipe-letter" style="--i:0">N</span>
+        <span class="wipe-letter" style="--i:1">E</span>
+        <span class="wipe-letter" style="--i:2">T</span>
+        <span class="wipe-letter red-letter" id="clickPart" style="--i:3">CLICK</span>
+      </div>
+
+      <!-- Animated cursor -->
+      <div class="cursor-pointer" id="cursorPointer">
+        <svg width="28" height="32" viewBox="0 0 28 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 2L4 24L9.5 18.5L13.5 27L16.5 25.5L12.5 16.5L20 16.5L4 2Z" fill="white" stroke="#222" stroke-width="1.2" stroke-linejoin="round"/>
+        </svg>
+        <div class="cursor-ripple" id="cursorRipple"></div>
+      </div>
+
+      <p class="tagline" id="tagline">Your personalised cinema</p>
+    </div>
+  </div>
+
+  <div class="login-panel hidden" id="loginPanel">
+    <div class="login-card">
+      <div class="login-logo">NET<span class="red">CLICK</span></div>
+      <p class="login-sub">Discover movies tailored just for you</p>
+      <button class="btn-primary" id="proceedBtn">Continue to Login</button>
+      <button class="btn-back" id="backBtn">&#8592; Back</button>
+    </div>
+  </div>
+
+  <script src="intro.js"></script>
 </body>
 </html>
