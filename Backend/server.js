@@ -32,8 +32,6 @@ app.post('/api/login', (req, res) => {
 });
 
 // ── PROFILE ───────────────────────────────────────────────────
-
-// Update username
 app.post('/api/profile/username', (req, res) => {
   const { userId, name } = req.body;
   if (!userId || !name) return res.status(400).json({ error: 'Missing fields' });
@@ -45,7 +43,6 @@ app.post('/api/profile/username', (req, res) => {
   });
 });
 
-// Update email
 app.post('/api/profile/email', (req, res) => {
   const { userId, email } = req.body;
   if (!userId || !email) return res.status(400).json({ error: 'Missing fields' });
@@ -57,7 +54,6 @@ app.post('/api/profile/email', (req, res) => {
   });
 });
 
-// Update profile picture (stored as base64)
 app.post('/api/profile/picture', (req, res) => {
   const { userId, picture } = req.body;
   if (!userId || !picture) return res.status(400).json({ error: 'Missing fields' });
@@ -67,7 +63,6 @@ app.post('/api/profile/picture', (req, res) => {
   });
 });
 
-// Update preferred language
 app.post('/api/profile/language', (req, res) => {
   const { userId, language } = req.body;
   if (!userId) return res.status(400).json({ error: 'Missing userId' });
@@ -77,7 +72,6 @@ app.post('/api/profile/language', (req, res) => {
   });
 });
 
-// Delete account
 app.delete('/api/profile/:userId', (req, res) => {
   const { userId } = req.params;
   db.run('DELETE FROM watch_history WHERE user_id = ?', [userId]);
@@ -88,6 +82,55 @@ app.delete('/api/profile/:userId', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
+});
+
+// ── STATS ─────────────────────────────────────────────────────
+app.get('/api/stats/:userId', (req, res) => {
+  const { userId } = req.params;
+
+  // Count total movies watched
+  db.get(
+    'SELECT COUNT(*) as total FROM watch_history WHERE user_id = ?',
+    [userId],
+    (err, countRow) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      const watchedCount = countRow?.total || 0;
+
+      // Estimate hours: average movie ~1.8hrs, multiply by count
+      const totalHours = Math.round(watchedCount * 1.8);
+
+      // Find top genre from preferences table
+      db.get(
+        'SELECT genre FROM preferences WHERE user_id = ? ORDER BY score DESC LIMIT 1',
+        [userId],
+        (err2, genreRow) => {
+          // Fallback: count genres from watch_history if preferences is empty
+          if (!genreRow) {
+            db.get(
+              `SELECT genres, COUNT(*) as cnt FROM watch_history
+               WHERE user_id = ? AND genres IS NOT NULL AND genres != ''
+               GROUP BY genres ORDER BY cnt DESC LIMIT 1`,
+              [userId],
+              (err3, histRow) => {
+                res.json({
+                  watched_count: watchedCount,
+                  total_hours:   totalHours,
+                  top_genre:     histRow?.genres || '—'
+                });
+              }
+            );
+          } else {
+            res.json({
+              watched_count: watchedCount,
+              total_hours:   totalHours,
+              top_genre:     genreRow.genre || '—'
+            });
+          }
+        }
+      );
+    }
+  );
 });
 
 // ── MOVIES ────────────────────────────────────────────────────
