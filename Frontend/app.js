@@ -1,9 +1,20 @@
 // frontend/app.js
 const BACKEND = 'https://netclick-production.up.railway.app';
-let currentUser = null;
-let currentMovie = null;
-let currentGenre = null;
+let currentUser    = null;
+let currentMovie   = null;
+let currentGenre   = null;
 let currentMoviesList = [];
+
+// Watchlist stored locally (persists via localStorage per user)
+function getWatchlist() {
+  const key = `netclick_watchlist_${currentUser?.id}`;
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch { return []; }
+}
+function saveWatchlist(list) {
+  const key = `netclick_watchlist_${currentUser?.id}`;
+  localStorage.setItem(key, JSON.stringify(list));
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   const stored = localStorage.getItem('netclick_user');
@@ -13,6 +24,7 @@ window.addEventListener('DOMContentLoaded', () => {
   updateGreeting();
   updateProfileDisplay();
   populateSidebarGenres();
+  loadUserStats();
 
   // Sidebar tab switching
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -21,28 +33,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
       btn.classList.add('active');
       document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
-    });
-  });
-
-  // Genre buttons - removed from main page, now only in sidebar
-  // Sidebar genre buttons handle genre selection
-  document.querySelectorAll('.sidebar-genre-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.genre-btn').forEach(b => {
-        if (b && b.dataset.genre === btn.dataset.genre) {
-          if (b.click) b.click();
-        }
-      });
-    });
-  });
-
-  // Handle genre selection via sidebar (replaces old genre button clicks)
-  document.querySelectorAll('.sidebar-genre-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentGenre = btn.dataset.genre;
-      document.getElementById('filtersPanel').classList.remove('hidden');
-      updateSidebarGenreHighlight(currentGenre);
-      loadMovies(currentGenre);
+      if (btn.dataset.tab === 'watchlist') renderWatchlist();
     });
   });
 
@@ -50,15 +41,14 @@ window.addEventListener('DOMContentLoaded', () => {
     if (currentGenre) loadMovies(currentGenre);
   });
 
-  // Reset filters button
   const resetBtn = document.getElementById('resetFilters');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      document.getElementById('filterRating').value = '';
-      document.getElementById('filterRuntime').value = '';
-      document.getElementById('filterLanguage').value = 'en';
-      document.getElementById('filterYear').value = '';
-      document.getElementById('filterPopularity').value = '';
+      document.getElementById('filterRating').value       = '';
+      document.getElementById('filterRuntime').value      = '';
+      document.getElementById('filterLanguage').value     = 'en';
+      document.getElementById('filterYear').value         = '';
+      document.getElementById('filterPopularity').value   = '';
       document.getElementById('filterRuntimeRange').value = '';
       if (currentGenre) loadMovies(currentGenre);
     });
@@ -76,26 +66,43 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('watchedBtn').addEventListener('click', markWatched);
+  document.getElementById('watchlistBtn').addEventListener('click', toggleWatchlist);
   document.getElementById('thumbsUp').addEventListener('click',   () => submitRating(1));
   document.getElementById('thumbsDown').addEventListener('click', () => submitRating(0));
 
-  // Profile button
-  document.getElementById('profileBtn').addEventListener('click', () => {
-    openProfilePanel();
-  });
-
-  // Profile panel close
+  document.getElementById('profileBtn').addEventListener('click', openProfilePanel);
   document.getElementById('profileClose').addEventListener('click', () => {
     document.getElementById('profilePanel').classList.add('hidden');
   });
 
-  // Profile form handlers
   document.getElementById('saveUsername').addEventListener('click', saveUsername);
   document.getElementById('saveEmail').addEventListener('click', saveEmail);
   document.getElementById('saveLanguage').addEventListener('click', saveLanguage);
   document.getElementById('pfpUpload').addEventListener('change', handlePfpUpload);
   document.getElementById('deleteAccount').addEventListener('click', deleteAccount);
 });
+
+// ── USER STATS ────────────────────────────────────────────────
+async function loadUserStats() {
+  try {
+    const res  = await fetch(`${BACKEND}/api/stats/${currentUser.id}`);
+    const data = await res.json();
+    updateStatsDisplay(data);
+  } catch (e) {
+    // silently fail — stats stay at defaults
+  }
+}
+
+function updateStatsDisplay(data) {
+  if (!data) return;
+  const count = data.watched_count ?? 0;
+  const hours = data.total_hours   ?? 0;
+  const genre = data.top_genre     ?? '—';
+
+  document.getElementById('watchedCount').textContent = count;
+  document.getElementById('hoursCount').textContent   = hours > 0 ? `${hours}h` : '0h';
+  document.getElementById('topGenre').textContent     = genre || '—';
+}
 
 // ── GREETING & PROFILE DISPLAY ────────────────────────────────
 function updateGreeting() {
@@ -105,7 +112,7 @@ function updateGreeting() {
 
 function updateProfileDisplay() {
   document.getElementById('sidebarUserName').textContent = currentUser.name || 'User';
-  const pfp = currentUser.picture;
+  const pfp     = currentUser.picture;
   const avatarEl = document.getElementById('sidebarAvatar');
   if (pfp) {
     avatarEl.innerHTML = `<img src="${pfp}" alt="Profile">`;
@@ -116,18 +123,24 @@ function updateProfileDisplay() {
 
 // ── SIDEBAR GENRES ────────────────────────────────────────────
 function populateSidebarGenres() {
-  const genres = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Thriller', 'Horror', 'Romance', 'Crime', 'Animation', 'Documentary'];
-  const genresList = document.getElementById('sidebarGenresList');
-  
-  genresList.innerHTML = genres.map(genre => `
-    <button class="sidebar-genre-btn" data-genre="${genre}">${genre}</button>
-  `).join('');
-  
+  const genres = ['Action','Comedy','Drama','Sci-Fi','Thriller','Horror','Romance','Crime','Animation','Documentary'];
+  const list   = document.getElementById('sidebarGenresList');
+
+  list.innerHTML = genres.map(g =>
+    `<button class="sidebar-genre-btn" data-genre="${g}">${g}</button>`
+  ).join('');
+
   document.querySelectorAll('.sidebar-genre-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.genre-btn').forEach(b => {
-        if (b.dataset.genre === btn.dataset.genre) b.click();
-      });
+      currentGenre = btn.dataset.genre;
+      updateSidebarGenreHighlight(currentGenre);
+      document.getElementById('filtersPanel').classList.remove('hidden');
+      // Switch to personalised tab if not already there
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
+      document.querySelector('[data-tab="personalised"]').classList.add('active');
+      document.getElementById('tab-personalised').classList.remove('hidden');
+      loadMovies(currentGenre);
     });
   });
 }
@@ -219,23 +232,19 @@ async function openMoviePopup(movieId) {
         `https://image.tmdb.org/t/p/w342${detail.poster_path}`;
     }
 
-    // Where to watch — use TMDB watch providers for Australia (AU)
-    const providers = detail['watch/providers']?.results?.AU;
+    // Streaming providers
+    const providers   = detail['watch/providers']?.results?.AU;
     const streamingDiv = document.getElementById('streamingProviders');
     if (providers && (providers.flatrate || providers.rent || providers.buy)) {
-      const all = [
-        ...(providers.flatrate || []),
-        ...(providers.rent     || []),
-        ...(providers.buy      || []),
-      ];
-      // Remove duplicates by provider_name
+      const all    = [...(providers.flatrate || []), ...(providers.rent || []), ...(providers.buy || [])];
       const unique = [...new Map(all.map(p => [p.provider_name, p])).values()];
-      streamingDiv.innerHTML = unique.map(p =>
-        `<span class="badge">${p.provider_name}</span>`
-      ).join('');
+      streamingDiv.innerHTML = unique.map(p => `<span class="badge">${p.provider_name}</span>`).join('');
     } else {
       streamingDiv.innerHTML = `<span class="badge muted">Not currently streaming in AU</span>`;
     }
+
+    // Update watchlist button state
+    updateWatchlistBtn();
 
     document.getElementById('moviePopup').classList.remove('hidden');
   } catch (e) {
@@ -243,23 +252,103 @@ async function openMoviePopup(movieId) {
   }
 }
 
-// ── UNIQUE REASON PER MOVIE ───────────────────────────────────
+// ── WATCHLIST BUTTON STATE ────────────────────────────────────
+function updateWatchlistBtn() {
+  const btn  = document.getElementById('watchlistBtn');
+  const list = getWatchlist();
+  const inList = list.some(m => m.id == currentMovie?.id);
+  if (inList) {
+    btn.textContent = '✓ In Watchlist';
+    btn.classList.add('in-watchlist');
+  } else {
+    btn.textContent = '+ Add to Watchlist';
+    btn.classList.remove('in-watchlist');
+  }
+}
+
+// ── TOGGLE WATCHLIST ──────────────────────────────────────────
+function toggleWatchlist() {
+  if (!currentMovie) return;
+  let list   = getWatchlist();
+  const idx  = list.findIndex(m => m.id == currentMovie.id);
+
+  if (idx > -1) {
+    list.splice(idx, 1);
+    showToast('Removed from watchlist');
+  } else {
+    list.push({ ...currentMovie });
+    showToast('Added to watchlist!');
+  }
+  saveWatchlist(list);
+  updateWatchlistBtn();
+}
+
+// ── RENDER WATCHLIST TAB ──────────────────────────────────────
+function renderWatchlist() {
+  const grid = document.getElementById('watchlistGrid');
+  const list = getWatchlist();
+
+  if (!list.length) {
+    grid.innerHTML = '<div class="placeholder-msg">Your watchlist is empty. Add movies to watch later!</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(movie => `
+    <div class="movie-card" data-id="${movie.id}" data-source="watchlist">
+      <div class="card-poster">
+        ${movie.poster
+          ? `<img src="${movie.poster}" alt="${movie.title}">`
+          : `<div class="no-poster">${movie.title.charAt(0)}</div>`}
+        <div class="card-overlay">
+          <span class="card-rating">&#9733; ${movie.rating?.toFixed(1) ?? 'N/A'}</span>
+        </div>
+        <button class="remove-watchlist-btn" data-id="${movie.id}" title="Remove">&times;</button>
+      </div>
+      <div class="card-info">
+        <h3>${movie.title}</h3>
+        <p class="card-year">${movie.release_year ?? ''}</p>
+        <p class="card-why">${movie.why_youll_like ?? ''}</p>
+      </div>
+    </div>
+  `).join('');
+
+  // Remove buttons
+  grid.querySelectorAll('.remove-watchlist-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let wl = getWatchlist();
+      wl = wl.filter(m => m.id != btn.dataset.id);
+      saveWatchlist(wl);
+      renderWatchlist();
+      showToast('Removed from watchlist');
+    });
+  });
+
+  // Click card to open popup (use watchlist data as currentMoviesList)
+  grid.querySelectorAll('.movie-card').forEach(card => {
+    card.addEventListener('click', () => {
+      currentMoviesList = list;
+      openMoviePopup(card.dataset.id);
+    });
+  });
+}
+
+// ── UNIQUE REASON ─────────────────────────────────────────────
 function generateUniqueReason(detail, genre) {
   const rating    = detail.vote_average?.toFixed(1) || 'N/A';
   const year      = detail.release_date?.split('-')[0] || '';
   const runtime   = detail.runtime || null;
   const voteCount = detail.vote_count?.toLocaleString() || 'many';
   const cast      = detail.credits?.cast?.slice(0, 2).map(a => a.name).join(' and ') || null;
-  const overview  = detail.overview || '';
+  const g         = genre || 'this';
 
   const reasons = [
-    `Rated ${rating}/10 by ${voteCount} viewers${year ? ` and released in ${year}` : ''}, this is one of the most appreciated ${genre} films based on your taste profile.`,
-    `${cast ? `Starring ${cast}, t` : 'T'}his ${year || ''} ${genre.toLowerCase()} film scored ${rating}/10 — a strong match for the type of content you've been watching.`,
-    `With a ${rating}/10 rating${runtime ? ` and a tight ${runtime}-minute runtime` : ''}, this is a standout ${genre} pick that aligns with your viewing history.`,
-    `${voteCount} people rated this ${rating}/10 — the crowd agrees this ${genre.toLowerCase()} film is worth your time${year ? ` (${year})` : ''}.`,
-    `Your history shows you enjoy quality ${genre} content. This ${year || ''} film (${rating}/10${cast ? `, featuring ${cast}` : ''}) fits that preference well.`,
+    `Rated ${rating}/10 by ${voteCount} viewers${year ? ` and released in ${year}` : ''}, this is one of the most appreciated ${g} films based on your taste profile.`,
+    `${cast ? `Starring ${cast}, t` : 'T'}his ${year || ''} ${g.toLowerCase()} film scored ${rating}/10 — a strong match for the type of content you've been watching.`,
+    `With a ${rating}/10 rating${runtime ? ` and a tight ${runtime}-minute runtime` : ''}, this is a standout ${g} pick that aligns with your viewing history.`,
+    `${voteCount} people rated this ${rating}/10 — the crowd agrees this ${g.toLowerCase()} film is worth your time${year ? ` (${year})` : ''}.`,
+    `Your history shows you enjoy quality ${g} content. This ${year || ''} film (${rating}/10${cast ? `, featuring ${cast}` : ''}) fits that preference well.`,
   ];
-
   return reasons[detail.id % reasons.length];
 }
 
@@ -278,6 +367,8 @@ async function markWatched() {
   });
   document.getElementById('moviePopup').classList.add('hidden');
   document.getElementById('ratingPopup').classList.remove('hidden');
+  // Refresh stats immediately
+  loadUserStats();
 }
 
 async function submitRating(rating) {
@@ -303,7 +394,7 @@ async function submitChatPrompt() {
 
   const btn = document.getElementById('chatSubmit');
   btn.textContent = 'Thinking...';
-  btn.disabled = true;
+  btn.disabled    = true;
 
   try {
     const res  = await fetch(`${BACKEND}/api/chatbot`, {
@@ -314,7 +405,7 @@ async function submitChatPrompt() {
     const data = await res.json();
 
     btn.textContent = 'Find Movies';
-    btn.disabled = false;
+    btn.disabled    = false;
 
     document.getElementById('chatMessage').textContent = data.message || '';
     const suggestionsDiv = document.getElementById('chatSuggestions');
@@ -333,7 +424,7 @@ async function submitChatPrompt() {
 
   } catch (e) {
     btn.textContent = 'Find Movies';
-    btn.disabled = false;
+    btn.disabled    = false;
     alert('Error connecting to chatbot. Please try again.');
   }
 }
@@ -350,14 +441,12 @@ function openProfilePanel() {
   } else {
     preview.innerHTML = `<span class="pfp-initial">${(currentUser.name || 'U').charAt(0).toUpperCase()}</span>`;
   }
-
   document.getElementById('profilePanel').classList.remove('hidden');
 }
 
 async function saveUsername() {
   const name = document.getElementById('profileName').value.trim();
   if (!name) return alert('Please enter a name');
-
   const res  = await fetch(`${BACKEND}/api/profile/username`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -376,7 +465,6 @@ async function saveUsername() {
 async function saveEmail() {
   const email = document.getElementById('profileEmail').value.trim();
   if (!email) return alert('Please enter an email');
-
   const res  = await fetch(`${BACKEND}/api/profile/email`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -415,12 +503,7 @@ function handlePfpUpload(e) {
   const reader = new FileReader();
   reader.onload = async (ev) => {
     const base64 = ev.target.result;
-
-    // Show preview immediately
-    document.getElementById('pfpPreview').innerHTML =
-      `<img src="${base64}" alt="Profile picture">`;
-
-    // Save to backend
+    document.getElementById('pfpPreview').innerHTML = `<img src="${base64}" alt="Profile picture">`;
     const res  = await fetch(`${BACKEND}/api/profile/picture`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -430,7 +513,7 @@ function handlePfpUpload(e) {
     if (data.success) {
       currentUser = { ...currentUser, picture: base64 };
       localStorage.setItem('netclick_user', JSON.stringify(currentUser));
-      updateProfileDisplay(); // updates sidebar avatar in real time
+      updateProfileDisplay();
       showToast('Profile picture updated!');
     }
   };
@@ -438,14 +521,8 @@ function handlePfpUpload(e) {
 }
 
 async function deleteAccount() {
-  const confirmed = confirm(
-    'Are you sure you want to delete your account? This cannot be undone.'
-  );
-  if (!confirmed) return;
-
-  const res = await fetch(`${BACKEND}/api/profile/${currentUser.id}`, {
-    method: 'DELETE'
-  });
+  if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+  const res  = await fetch(`${BACKEND}/api/profile/${currentUser.id}`, { method: 'DELETE' });
   const data = await res.json();
   if (data.success) {
     localStorage.removeItem('netclick_user');
@@ -453,7 +530,7 @@ async function deleteAccount() {
   }
 }
 
-// ── TOAST NOTIFICATION ────────────────────────────────────────
+// ── TOAST ─────────────────────────────────────────────────────
 function showToast(msg) {
   const toast = document.getElementById('toast');
   toast.textContent = msg;

@@ -14,10 +14,10 @@
     <div class="sidebar-logo">NET<span class="logo-accent">CLICK</span></div>
     <nav class="sidebar-nav">
       <button class="nav-btn active" data-tab="personalised">Personalised Viewing</button>
-      <button class="nav-btn" data-tab="watchlist">📚 Watchlist</button>
+      <button class="nav-btn" data-tab="watchlist">Watchlist</button>
       <button class="nav-btn" data-tab="chatbot">AI Chatbot</button>
     </nav>
-    
+
     <!-- USER STATS -->
     <div class="user-stats" id="userStats">
       <div class="stat-item">
@@ -33,7 +33,7 @@
         <div class="stat-value" id="topGenre">—</div>
       </div>
     </div>
-    
+
     <!-- GENRES PANEL -->
     <div class="sidebar-genres" id="sidebarGenres">
       <div class="sidebar-genres-title">Quick Access</div>
@@ -52,23 +52,8 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
 
-
     <!-- TAB 1: PERSONALISED VIEWING -->
     <section id="tab-personalised" class="tab active">
-      <!-- TRENDING SECTION -->
-      <div class="trending-section" id="trendingSection">
-        <div class="section-header">
-          <h3>🔥 Trending Now</h3>
-          <div class="carousel-controls">
-            <button class="carousel-btn prev" id="trendingPrev">❮</button>
-            <button class="carousel-btn next" id="trendingNext">❯</button>
-          </div>
-        </div>
-        <div class="trending-carousel" id="trendingCarousel">
-          <div class="carousel-track" id="trendingTrack"></div>
-        </div>
-      </div>
-
       <div class="tab-header">
         <div class="header-content">
           <h2 id="greetingText">Hello</h2>
@@ -142,7 +127,7 @@
             <select id="filterRuntimeRange">
               <option value="">Any Duration</option>
               <option value="short">Short (under 100 min)</option>
-              <option value="medium">Medium (100-130 min)</option>
+              <option value="medium">Medium (100–130 min)</option>
               <option value="long">Long (130+ min)</option>
             </select>
           </div>
@@ -183,7 +168,7 @@
     <section id="tab-watchlist" class="tab hidden">
       <div class="tab-header">
         <div class="header-content">
-          <h2>📚 My Watchlist</h2>
+          <h2>My Watchlist</h2>
           <p>Movies saved for later</p>
         </div>
       </div>
@@ -216,8 +201,10 @@
         <h4>Where to watch in Australia:</h4>
         <div class="streaming-badges" id="streamingProviders"></div>
       </div>
-            <button class="btn-watched" id="watchedBtn">Mark as Watched</button>
-      <button class="btn-watchlist" id="watchlistBtn">📚 Add to Watchlist</button>
+      <div class="popup-actions">
+        <button class="btn-watched" id="watchedBtn">Mark as Watched</button>
+        <button class="btn-watchlist" id="watchlistBtn">+ Add to Watchlist</button>
+      </div>
     </div>
   </div>
 
@@ -239,7 +226,6 @@
       <button class="popup-close" id="profileClose">&times;</button>
       <h2>My Profile</h2>
 
-      <!-- Profile picture -->
       <div class="pfp-section">
         <div class="pfp-preview" id="pfpPreview"><span class="pfp-initial">U</span></div>
         <label class="btn-secondary pfp-label">
@@ -248,7 +234,6 @@
         </label>
       </div>
 
-      <!-- Username -->
       <div class="profile-field">
         <label>Username</label>
         <div class="field-row">
@@ -257,7 +242,6 @@
         </div>
       </div>
 
-      <!-- Email -->
       <div class="profile-field">
         <label>Email Address</label>
         <div class="field-row">
@@ -266,7 +250,6 @@
         </div>
       </div>
 
-      <!-- Preferred language -->
       <div class="profile-field">
         <label>Preferred Movie Language</label>
         <div class="field-row">
@@ -285,7 +268,6 @@
         </div>
       </div>
 
-      <!-- Danger zone -->
       <div class="danger-zone">
         <h4>Danger Zone</h4>
         <button class="btn-danger" id="deleteAccount">Delete My Account</button>
