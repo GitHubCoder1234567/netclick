@@ -15,7 +15,8 @@
     <nav class="sidebar-nav">
       <button class="nav-btn active" data-tab="personalised">Personalised Viewing</button>
       <button class="nav-btn" data-tab="watchlist">Watchlist</button>
-      <button class="nav-btn" data-tab="chatbot">AI Chatbot</button>
+      <button class="nav-btn" data-tab="mood">Mood Picker</button>
+      <button class="nav-btn" data-tab="charts">Top Charts</button>
     </nav>
 
     <!-- USER STATS -->
@@ -140,31 +141,7 @@
       </div>
     </section>
 
-    <!-- TAB 2: AI CHATBOT -->
-    <section id="tab-chatbot" class="tab hidden">
-      <div class="tab-header">
-        <h2>AI Movie Assistant</h2>
-        <p>Tell me exactly what you want to watch and I'll find it for you</p>
-      </div>
-      <div class="chatbot-examples">
-        <p>Try asking:</p>
-        <span class="example-chip">"Action movie with Adam Sandler, funny, good ratings"</span>
-        <span class="example-chip">"Something like Inception but more emotional"</span>
-        <span class="example-chip">"Short horror film under 90 minutes from the 2020s"</span>
-        <span class="example-chip">"A feel-good comedy with a happy ending"</span>
-      </div>
-      <div class="chatbot-input-area">
-        <textarea id="chatPrompt" rows="3" style="resize:none"
-          placeholder="Describe what you want to watch — genre, mood, actors, era..."></textarea>
-        <button id="chatSubmit" class="btn-primary">Find Movies</button>
-      </div>
-      <div class="chatbot-response hidden" id="chatbotResponse">
-        <p class="chat-message" id="chatMessage"></p>
-        <div class="chatbot-suggestions" id="chatSuggestions"></div>
-      </div>
-    </section>
-
-    <!-- TAB 3: WATCHLIST -->
+    <!-- TAB 2: WATCHLIST -->
     <section id="tab-watchlist" class="tab hidden">
       <div class="tab-header">
         <div class="header-content">
@@ -177,7 +154,153 @@
       </div>
     </section>
 
+    <!-- TAB 3: MOOD PICKER -->
+    <section id="tab-mood" class="tab hidden">
+      <div class="tab-header">
+        <div class="header-content">
+          <h2>What's your mood?</h2>
+          <p>Pick how you're feeling and we'll find the perfect movie for you</p>
+        </div>
+      </div>
+
+      <div class="mood-grid" id="moodGrid">
+        <div class="mood-card" data-mood="happy">
+          <div class="mood-icon">😄</div>
+          <div class="mood-label">Happy & Upbeat</div>
+          <div class="mood-sub">Feel-good films to match your energy</div>
+        </div>
+        <div class="mood-card" data-mood="laugh">
+          <div class="mood-icon">😂</div>
+          <div class="mood-label">I Want to Laugh</div>
+          <div class="mood-sub">Comedies guaranteed to crack you up</div>
+        </div>
+        <div class="mood-card" data-mood="thrilled">
+          <div class="mood-icon">😱</div>
+          <div class="mood-label">Edge of My Seat</div>
+          <div class="mood-sub">Thrillers and suspense that keep you guessing</div>
+        </div>
+        <div class="mood-card" data-mood="scared">
+          <div class="mood-icon">👻</div>
+          <div class="mood-label">Scare Me</div>
+          <div class="mood-sub">Horror films that will keep you up at night</div>
+        </div>
+        <div class="mood-card" data-mood="emotional">
+          <div class="mood-icon">😢</div>
+          <div class="mood-label">Emotional Journey</div>
+          <div class="mood-sub">Powerful dramas that move you deeply</div>
+        </div>
+        <div class="mood-card" data-mood="romantic">
+          <div class="mood-icon">❤️</div>
+          <div class="mood-label">Date Night</div>
+          <div class="mood-sub">Romantic films perfect for two</div>
+        </div>
+        <div class="mood-card" data-mood="adventure">
+          <div class="mood-icon">🚀</div>
+          <div class="mood-label">Big Adventure</div>
+          <div class="mood-sub">Epic action and adventure films</div>
+        </div>
+        <div class="mood-card" data-mood="mindblown">
+          <div class="mood-icon">🤯</div>
+          <div class="mood-label">Blow My Mind</div>
+          <div class="mood-sub">Mind-bending sci-fi and twisty films</div>
+        </div>
+        <div class="mood-card" data-mood="chill">
+          <div class="mood-icon">😌</div>
+          <div class="mood-label">Just Chill</div>
+          <div class="mood-sub">Easy-watching films for a relaxed evening</div>
+        </div>
+        <div class="mood-card" data-mood="inspired">
+          <div class="mood-icon">💪</div>
+          <div class="mood-label">Inspire Me</div>
+          <div class="mood-sub">True stories and films that motivate</div>
+        </div>
+        <div class="mood-card" data-mood="family">
+          <div class="mood-icon">👨‍👩‍👧</div>
+          <div class="mood-label">Family Night</div>
+          <div class="mood-sub">Great for everyone to watch together</div>
+        </div>
+        <div class="mood-card" data-mood="classic">
+          <div class="mood-icon">🎬</div>
+          <div class="mood-label">Classic Cinema</div>
+          <div class="mood-sub">Timeless films everyone should see</div>
+        </div>
+      </div>
+
+      <!-- Mood results -->
+      <div class="mood-results hidden" id="moodResults">
+        <div class="mood-results-header">
+          <h3 id="moodResultsTitle"></h3>
+          <button class="btn-reset" id="moodBackBtn">Pick another mood</button>
+        </div>
+        <div class="movies-grid" id="moodMoviesGrid"></div>
+      </div>
+    </section>
+
+    <!-- TAB 4: TOP CHARTS -->
+    <section id="tab-charts" class="tab hidden">
+      <div class="tab-header">
+        <div class="header-content">
+          <h2>Top Charts</h2>
+          <p>What the world is watching right now</p>
+        </div>
+      </div>
+
+      <div class="charts-tabs">
+        <button class="chart-tab-btn active" data-chart="trending">Trending Now</button>
+        <button class="chart-tab-btn" data-chart="toprated">Top Rated</button>
+        <button class="chart-tab-btn" data-chart="newreleases">New Releases</button>
+      </div>
+
+      <div class="movies-grid" id="chartsGrid">
+        <div class="placeholder-msg">Loading charts...</div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- STREAMING LINK PROMPT -->
+  <div class="popup-overlay hidden" id="streamingPrompt">
+    <div class="popup-card streaming-prompt-card">
+      <h2>Link Your Streaming Services</h2>
+      <p class="streaming-prompt-sub">Connect your accounts so NetClick knows what you have access to and can give you better recommendations.</p>
+      <div class="streaming-services-grid">
+        <div class="service-toggle" data-service="Netflix">
+          <div class="service-logo netflix-logo">N</div>
+          <span>Netflix</span>
+          <div class="service-check" id="check-Netflix"></div>
+        </div>
+        <div class="service-toggle" data-service="Prime">
+          <div class="service-logo prime-logo">P</div>
+          <span>Prime Video</span>
+          <div class="service-check" id="check-Prime"></div>
+        </div>
+        <div class="service-toggle" data-service="Disney">
+          <div class="service-logo disney-logo">D+</div>
+          <span>Disney+</span>
+          <div class="service-check" id="check-Disney"></div>
+        </div>
+        <div class="service-toggle" data-service="Stan">
+          <div class="service-logo stan-logo">S</div>
+          <span>Stan</span>
+          <div class="service-check" id="check-Stan"></div>
+        </div>
+        <div class="service-toggle" data-service="AppleTV">
+          <div class="service-logo apple-logo">TV+</div>
+          <span>Apple TV+</span>
+          <div class="service-check" id="check-AppleTV"></div>
+        </div>
+        <div class="service-toggle" data-service="Binge">
+          <div class="service-logo binge-logo">B</div>
+          <span>Binge</span>
+          <div class="service-check" id="check-Binge"></div>
+        </div>
+      </div>
+      <div class="streaming-prompt-actions">
+        <button class="btn-primary" id="saveStreamingBtn">Save & Continue</button>
+        <button class="btn-back" id="skipStreamingBtn">Skip for now</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MOVIE POPUP -->
   <div class="popup-overlay hidden" id="moviePopup">
@@ -225,7 +348,6 @@
     <div class="popup-card profile-card">
       <button class="popup-close" id="profileClose">&times;</button>
       <h2>My Profile</h2>
-
       <div class="pfp-section">
         <div class="pfp-preview" id="pfpPreview"><span class="pfp-initial">U</span></div>
         <label class="btn-secondary pfp-label">
@@ -233,7 +355,6 @@
           <input type="file" id="pfpUpload" accept="image/*" style="display:none">
         </label>
       </div>
-
       <div class="profile-field">
         <label>Username</label>
         <div class="field-row">
@@ -241,7 +362,6 @@
           <button class="btn-secondary" id="saveUsername">Save</button>
         </div>
       </div>
-
       <div class="profile-field">
         <label>Email Address</label>
         <div class="field-row">
@@ -249,7 +369,6 @@
           <button class="btn-secondary" id="saveEmail">Save</button>
         </div>
       </div>
-
       <div class="profile-field">
         <label>Preferred Movie Language</label>
         <div class="field-row">
@@ -267,7 +386,6 @@
           <button class="btn-secondary" id="saveLanguage">Save</button>
         </div>
       </div>
-
       <div class="danger-zone">
         <h4>Danger Zone</h4>
         <button class="btn-danger" id="deleteAccount">Delete My Account</button>

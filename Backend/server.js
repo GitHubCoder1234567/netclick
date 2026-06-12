@@ -221,3 +221,47 @@ app.post('/api/chatbot', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`NetClick backend running on port ${PORT}`));
+
+// ── CHARTS ────────────────────────────────────────────────────
+app.get('/api/charts/:type', async (req, res) => {
+  try {
+    const { type } = req.params;
+    const KEY  = process.env.TMDB_API_KEY;
+    const BASE = 'https://api.themoviedb.org/3';
+    let url;
+
+    if (type === 'trending') {
+      url = `${BASE}/trending/movie/week?api_key=${KEY}`;
+    } else if (type === 'toprated') {
+      url = `${BASE}/movie/top_rated?api_key=${KEY}&vote_count.gte=1000`;
+    } else if (type === 'newreleases') {
+      const today = new Date().toISOString().split('T')[0];
+      const month = new Date(Date.now() - 60*24*60*60*1000).toISOString().split('T')[0];
+      url = `${BASE}/discover/movie?api_key=${KEY}&sort_by=popularity.desc&primary_release_date.gte=${month}&primary_release_date.lte=${today}&vote_count.gte=50`;
+    } else {
+      return res.status(400).json({ error: 'Invalid chart type' });
+    }
+
+    const fetch = require('node-fetch');
+    const r    = await fetch(url);
+    const data = await r.json();
+
+    const movies = (data.results || []).slice(0, 20).map(m => ({
+      id:           m.id,
+      title:        m.title,
+      rating:       m.vote_average,
+      poster:       m.poster_path ? `https://image.tmdb.org/t/p/w342${m.poster_path}` : null,
+      release_year: m.release_date?.split('-')[0] || '',
+      why_youll_like: `Rated ${m.vote_average?.toFixed(1)}/10 by ${m.vote_count?.toLocaleString()} viewers.`,
+    }));
+
+    res.json({ movies });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── TMDB KEY PROXY (for mood picker) ─────────────────────────
+app.get('/api/tmdbkey', (req, res) => {
+  res.json({ key: process.env.TMDB_API_KEY });
+});
