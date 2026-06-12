@@ -5,7 +5,7 @@ const TRANSLATIONS = {
   en: {
     nav_personalised: 'Personalised Viewing',
     nav_watchlist:    'Watchlist',
-    nav_chatbot:      'AI Chatbot',
+    nav_chatbot:      'Mood Picker',           // ← Changed
     greeting_prefix:  'Hello',
     greeting_sub:     'Select a genre from the sidebar to explore personalised recommendations',
     filters_title:    'Refine Your Search',
@@ -20,7 +20,7 @@ const TRANSLATIONS = {
     watchlist_title:  'My Watchlist',
     watchlist_sub:    'Movies saved for later',
     watchlist_empty:  'Your watchlist is empty. Add movies to watch later!',
-    chatbot_title:    'AI Movie Assistant',
+    chatbot_title:    'Mood Picker',           // ← Changed
     chatbot_sub:      'Tell me exactly what you want to watch and I\'ll find it for you',
     chatbot_placeholder: 'Describe what you want to watch — genre, mood, actors, era...',
     chatbot_btn:      'Find Movies',
@@ -52,7 +52,7 @@ const TRANSLATIONS = {
   es: {
     nav_personalised: 'Vista personalizada',
     nav_watchlist:    'Lista de seguimiento',
-    nav_chatbot:      'Chatbot de IA',
+    nav_chatbot:      'Selector de Humor',     // ← Changed
     greeting_prefix:  'Hola',
     greeting_sub:     'Selecciona un género de la barra lateral para explorar recomendaciones',
     filters_title:    'Refinar búsqueda',
@@ -67,7 +67,7 @@ const TRANSLATIONS = {
     watchlist_title:  'Mi lista',
     watchlist_sub:    'Películas guardadas para más tarde',
     watchlist_empty:  '¡Tu lista está vacía. Agrega películas para ver más tarde!',
-    chatbot_title:    'Asistente de películas IA',
+    chatbot_title:    'Selector de Humor',     // ← Changed
     chatbot_sub:      'Dime exactamente qué quieres ver y lo encontraré',
     chatbot_placeholder: 'Describe lo que quieres ver...',
     chatbot_btn:      'Buscar películas',
@@ -99,7 +99,7 @@ const TRANSLATIONS = {
   fr: {
     nav_personalised: 'Vue personnalisée',
     nav_watchlist:    'Ma liste',
-    nav_chatbot:      'Chatbot IA',
+    nav_chatbot:      'Sélecteur d\'Humeur',   // ← Changed
     greeting_prefix:  'Bonjour',
     greeting_sub:     'Sélectionnez un genre pour explorer les recommandations personnalisées',
     filters_title:    'Affiner la recherche',
@@ -114,7 +114,7 @@ const TRANSLATIONS = {
     watchlist_title:  'Ma liste',
     watchlist_sub:    'Films sauvegardés pour plus tard',
     watchlist_empty:  'Votre liste est vide. Ajoutez des films à regarder plus tard !',
-    chatbot_title:    'Assistant cinéma IA',
+    chatbot_title:    'Sélecteur d\'Humeur',   // ← Changed
     chatbot_sub:      'Dites-moi ce que vous voulez voir',
     chatbot_placeholder: 'Décrivez ce que vous voulez regarder...',
     chatbot_btn:      'Trouver des films',
@@ -146,7 +146,7 @@ const TRANSLATIONS = {
   de: {
     nav_personalised: 'Personalisierte Ansicht',
     nav_watchlist:    'Merkliste',
-    nav_chatbot:      'KI-Chatbot',
+    nav_chatbot:      'Stimmungs-Picker',      // ← Changed
     greeting_prefix:  'Hallo',
     greeting_sub:     'Wähle ein Genre aus der Seitenleiste',
     filters_title:    'Suche verfeinern',
@@ -161,7 +161,7 @@ const TRANSLATIONS = {
     watchlist_title:  'Meine Merkliste',
     watchlist_sub:    'Für später gespeicherte Filme',
     watchlist_empty:  'Deine Merkliste ist leer.',
-    chatbot_title:    'KI-Filmassistent',
+    chatbot_title:    'Stimmungs-Picker',      // ← Changed
     chatbot_sub:      'Beschreibe, was du sehen möchtest',
     chatbot_placeholder: 'Beschreibe, was du sehen möchtest...',
     chatbot_btn:      'Filme finden',
@@ -193,7 +193,7 @@ const TRANSLATIONS = {
   ja: {
     nav_personalised: 'パーソナライズ表示',
     nav_watchlist:    'ウォッチリスト',
-    nav_chatbot:      'AIチャットボット',
+    nav_chatbot:      'ムードピッカー',        // ← Changed
     greeting_prefix:  'こんにちは',
     greeting_sub:     'サイドバーからジャンルを選択してください',
     filters_title:    '検索を絞り込む',
@@ -208,7 +208,7 @@ const TRANSLATIONS = {
     watchlist_title:  'ウォッチリスト',
     watchlist_sub:    '後で見る映画',
     watchlist_empty:  'ウォッチリストは空です。映画を追加してください！',
-    chatbot_title:    'AI映画アシスタント',
+    chatbot_title:    'ムードピッカー',        // ← Changed
     chatbot_sub:      '見たいものを教えてください',
     chatbot_placeholder: '見たい映画のジャンルや気分を入力...',
     chatbot_btn:      '映画を探す',
@@ -240,7 +240,7 @@ const TRANSLATIONS = {
   ko: {
     nav_personalised: '맞춤형 보기',
     nav_watchlist:    '찜 목록',
-    nav_chatbot:      'AI 챗봇',
+    nav_chatbot:      '무드 피커',             // ← Changed
     greeting_prefix:  '안녕하세요',
     greeting_sub:     '사이드바에서 장르를 선택하세요',
     filters_title:    '검색 다듬기',
@@ -255,7 +255,7 @@ const TRANSLATIONS = {
     watchlist_title:  '내 찜 목록',
     watchlist_sub:    '나중에 볼 영화',
     watchlist_empty:  '찜 목록이 비어 있습니다. 영화를 추가하세요!',
-    chatbot_title:    'AI 영화 도우미',
+    chatbot_title:    '무드 피커',             // ← Changed
     chatbot_sub:      '보고 싶은 영화를 알려주세요',
     chatbot_placeholder: '보고 싶은 장르, 분위기, 배우를 입력하세요...',
     chatbot_btn:      '영화 찾기',
@@ -287,7 +287,7 @@ const TRANSLATIONS = {
   hi: {
     nav_personalised: 'व्यक्तिगत दृश्य',
     nav_watchlist:    'वॉचलिस्ट',
-    nav_chatbot:      'AI चैटबॉट',
+    nav_chatbot:      'मूड पिकर',              // ← Changed
     greeting_prefix:  'नमस्ते',
     greeting_sub:     'साइडबार से एक शैली चुनें',
     filters_title:    'खोज को सुधारें',
@@ -302,7 +302,7 @@ const TRANSLATIONS = {
     watchlist_title:  'मेरी वॉचलिस्ट',
     watchlist_sub:    'बाद में देखने के लिए सहेजी गई फ़िल्में',
     watchlist_empty:  'आपकी वॉचलिस्ट खाली है!',
-    chatbot_title:    'AI मूवी असिस्टेंट',
+    chatbot_title:    'मूड पिकर',              // ← Changed
     chatbot_sub:      'मुझे बताएं आप क्या देखना चाहते हैं',
     chatbot_placeholder: 'शैली, मूड, कलाकार बताएं...',
     chatbot_btn:      'फ़िल्में खोजें',
@@ -334,7 +334,7 @@ const TRANSLATIONS = {
   it: {
     nav_personalised: 'Visualizzazione personalizzata',
     nav_watchlist:    'Lista desideri',
-    nav_chatbot:      'Chatbot IA',
+    nav_chatbot:      'Selettore d\'Umore',    // ← Changed
     greeting_prefix:  'Ciao',
     greeting_sub:     'Seleziona un genere dalla barra laterale',
     filters_title:    'Affina la ricerca',
@@ -349,7 +349,7 @@ const TRANSLATIONS = {
     watchlist_title:  'La mia lista',
     watchlist_sub:    'Film salvati per dopo',
     watchlist_empty:  'La tua lista è vuota. Aggiungi film da guardare dopo!',
-    chatbot_title:    'Assistente film IA',
+    chatbot_title:    'Selettore d\'Umore',    // ← Changed
     chatbot_sub:      'Dimmi cosa vuoi guardare',
     chatbot_placeholder: 'Descrivi cosa vuoi guardare...',
     chatbot_btn:      'Trova film',
