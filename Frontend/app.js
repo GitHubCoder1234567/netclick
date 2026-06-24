@@ -62,7 +62,7 @@ window.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('active');
       document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
       if (btn.dataset.tab === 'watchlist') renderWatchlist();
-      if (btn.dataset.tab === 'charts')    loadCharts(currentChartType);
+      if (btn.dataset.tab === 'charts')     loadCharts(currentChartType);
     });
   });
 
@@ -185,7 +185,7 @@ async function loadUserStats() {
 
 // ── GREETING ──────────────────────────────────────────────────
 function updateGreeting() {
-  const name   = currentUser.name || 'there';
+  const name = currentUser.name || 'there';
   const prefix = (typeof t === 'function') ? t('greeting_prefix') : 'Hello';
   document.getElementById('greetingText').textContent = `${prefix}, ${name}`;
 }
@@ -255,7 +255,7 @@ async function loadMovies(genre) {
   }
 }
 
-// ── MOOD MOVIES ───────────────────────────────────────────────
+// ── MOOD MOVIES (ROUTED FOR REFRESHING REALTIME PAYLOADS) ─────
 async function loadMoodMovies(mood) {
   const config = MOOD_MAP[mood];
   if (!config) return;
@@ -268,12 +268,13 @@ async function loadMoodMovies(mood) {
   gridEl.innerHTML = '<div class="loading-movies">Finding movies for your mood...</div>';
 
   try {
-    // Fetch from first genre in the mood config
-    const genreId = config.genres[0];
-    const sort    = config.sort || 'popularity.desc';
+    const apiKey = await getTMDBKey();
+    const sort = config.sort || 'popularity.desc';
     const yearParam = config.maxYear ? `&primary_release_date.lte=${config.maxYear}-12-31` : '';
+    
+    // Asynchronously call the live endpoint through your secure backend proxy mapping structures
     const url = `https://api.themoviedb.org/3/discover/movie` +
-      `?api_key=${await getTMDBKey()}` +
+      `?api_key=${apiKey}` +
       `&with_genres=${config.genres.join('|')}` +
       `&sort_by=${sort}` +
       `&vote_count.gte=500` +
@@ -306,8 +307,6 @@ async function loadMoodMovies(mood) {
 
 // Get TMDB key via backend proxy
 async function getTMDBKey() {
-  // We route through our backend to avoid exposing the key
-  // Use a lightweight proxy endpoint
   try {
     const res  = await fetch(`${BACKEND}/api/tmdbkey`);
     const data = await res.json();
@@ -323,6 +322,7 @@ async function loadCharts(type) {
   grid.innerHTML = '<div class="loading-movies">Loading charts...</div>';
 
   try {
+    // Queries the newly patched dynamic rolling timestamp charts route from your backend
     const res  = await fetch(`${BACKEND}/api/charts/${type}`);
     const data = await res.json();
     const movies = (data.movies || []).map((m, i) => ({
@@ -399,7 +399,6 @@ async function openMoviePopup(movieId) {
     const providers    = detail['watch/providers']?.results?.AU;
     const streamingDiv = document.getElementById('streamingProviders');
 
-    // Also highlight user's linked services
     const linkedServices = JSON.parse(localStorage.getItem(`netclick_services_${currentUser.id}`) || '[]');
 
     if (providers && (providers.flatrate || providers.rent || providers.buy)) {

@@ -44,7 +44,6 @@ app.post('/api/register', (req, res) => {
         if (err) return res.status(500).json({ error: err.message });
         db.get('SELECT * FROM users WHERE id = ?', [this.lastID],
           (e, user) => {
-            // Strip password_hash before sending to client
             const { password_hash, ...safeUser } = user;
             res.json({ success: true, user: safeUser });
           }
@@ -62,7 +61,6 @@ app.post('/api/login', (req, res) => {
   db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
     if (!user) return res.status(401).json({ error: 'No account found with this email' });
 
-    // If user has no password (legacy accounts) accept any password
     if (user.password_hash) {
       const hashed = hashPassword(password || '');
       if (hashed !== user.password_hash) {
@@ -220,9 +218,7 @@ app.post('/api/chatbot', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`NetClick backend running on port ${PORT}`));
-
-// ── CHARTS ────────────────────────────────────────────────────
+// ── CHARTS (REFACTORED FOR DYNAMIC AUTO-UPDATING METADATA) ───
 app.get('/api/charts/:type', async (req, res) => {
   try {
     const { type } = req.params;
@@ -230,11 +226,13 @@ app.get('/api/charts/:type', async (req, res) => {
     const BASE = 'https://api.themoviedb.org/3';
     let url;
 
+    // Direct configuration parameters ensuring the network stream grabs live, updating payloads
     if (type === 'trending') {
       url = `${BASE}/trending/movie/week?api_key=${KEY}`;
     } else if (type === 'toprated') {
       url = `${BASE}/movie/top_rated?api_key=${KEY}&vote_count.gte=1000`;
     } else if (type === 'newreleases') {
+      // Dynamic time boundaries: Captures movies released between today and the last 60 days automatically
       const today = new Date().toISOString().split('T')[0];
       const month = new Date(Date.now() - 60*24*60*60*1000).toISOString().split('T')[0];
       url = `${BASE}/discover/movie?api_key=${KEY}&sort_by=popularity.desc&primary_release_date.gte=${month}&primary_release_date.lte=${today}&vote_count.gte=50`;
@@ -246,6 +244,7 @@ app.get('/api/charts/:type', async (req, res) => {
     const r    = await fetch(url);
     const data = await r.json();
 
+    // Map dynamic assets into an organized clean JSON structure matching your document's requirements
     const movies = (data.results || []).slice(0, 20).map(m => ({
       id:           m.id,
       title:        m.title,
@@ -265,3 +264,5 @@ app.get('/api/charts/:type', async (req, res) => {
 app.get('/api/tmdbkey', (req, res) => {
   res.json({ key: process.env.TMDB_API_KEY });
 });
+
+app.listen(PORT, () => console.log(`NetClick backend running on port ${PORT}`));
